@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalendarDays } from 'lucide-react'
 import {
@@ -15,9 +15,10 @@ import {
   useToast,
 } from '@/components/component-library'
 import { colors, iconSize } from '@/lib/tokens'
+import { type ProfileInputs, getWeeklyRecommendation } from '@/lib/recommendations'
 
 type NavTab = 'today' | 'plan' | 'progress' | 'log'
-type MealSlot = 'Breakfast' | 'Snack AM' | 'Lunch' | 'Snack PM' | 'Dinner'
+type MealSlot = 'Breakfast' | 'Brunch' | 'Lunch' | 'Dinner' | 'Snack AM' | 'Snack PM'
 type SplitDay = 'Push' | 'Pull' | 'Legs' | 'Upper' | 'Rest'
 
 type PlannedMeal = {
@@ -143,11 +144,61 @@ const swapOptions = [
   { name: 'Salmon, potatoes and greens', calories: 710, protein: 49, cookTime: 30, cuisine: 'British' },
 ]
 
+function readStoredProfile(): ProfileInputs {
+  if (typeof window === 'undefined') return {}
+
+  const stored = window.localStorage.getItem('forge:onboarding')
+  if (!stored) return {}
+
+  try {
+    const parsed = JSON.parse(stored) as {
+      heightCm?: number
+      currentWeightKg?: number
+      targetWeightKg?: number
+    }
+
+    return {
+      heightCm: parsed.heightCm,
+      currentWeightKg: parsed.currentWeightKg,
+      targetWeightKg: parsed.targetWeightKg,
+    }
+  } catch {
+    return {}
+  }
+}
+
+function buildWeekPlan(profile?: ProfileInputs): PlanDay[] {
+  return getWeeklyRecommendation(profile).map((day) => ({
+    id: day.id,
+    label: day.label,
+    date: day.date,
+    meals: day.meals.map((meal) => ({
+      id: `${day.id}-${meal.id}`,
+      slot: meal.slot as MealSlot,
+      time: meal.time,
+      name: meal.name,
+      calories: meal.calories,
+      protein: meal.protein,
+      cookTime: meal.cookTime,
+      cuisine: meal.cuisine,
+    })),
+    workout: {
+      split: day.workout.splitLabel.replace(' day', '') as SplitDay,
+      name: day.workout.muscleGroups,
+      duration: day.workout.estimatedMinutes,
+    },
+  }))
+}
+
+function todayId() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 function PlanContent() {
   const router = useRouter()
   const { toast } = useToast()
-  const [plan, setPlan] = useState<PlanDay[] | null>(weekPlan)
-  const [selectedDayId, setSelectedDayId] = useState('wed')
+  const [plan, setPlan] = useState<PlanDay[] | null>(() => buildWeekPlan())
+  const [selectedDayId, setSelectedDayId] = useState(todayId)
   const [locked, setLocked] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [swappingMeal, setSwappingMeal] = useState<PlannedMeal | null>(null)
@@ -166,11 +217,17 @@ function PlanContent() {
     ) ?? { calories: 0, protein: 0 }
   }, [selectedDay])
 
+  useEffect(() => {
+    const nextPlan = buildWeekPlan(readStoredProfile())
+    setPlan(nextPlan)
+    setSelectedDayId(todayId())
+  }, [])
+
   function generatePlan() {
     setGenerating(true)
     window.setTimeout(() => {
-      setPlan(weekPlan)
-      setSelectedDayId('wed')
+      setPlan(buildWeekPlan(readStoredProfile()))
+      setSelectedDayId(todayId())
       setLocked(false)
       setGenerating(false)
       toast({ message: 'Plan generated', type: 'success' })

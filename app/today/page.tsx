@@ -23,20 +23,17 @@ import {
   useToast,
 } from '@/components/component-library'
 import { iconSize } from '@/lib/tokens'
+import {
+  type ProfileInputs,
+  type RecommendedMeal,
+  getDailyRecommendation,
+  getReminderPreviews,
+} from '@/lib/recommendations'
 
-type MealStatus = 'eaten' | 'upcoming' | 'due-soon' | 'skipped'
 type NavTab = 'today' | 'plan' | 'progress' | 'log'
 type ManualLogField = 'name' | 'calories' | 'protein' | 'notes'
 
-type Meal = {
-  id: string
-  time: string
-  slot: string
-  name: string
-  calories: number
-  protein: number
-  status: MealStatus
-}
+type Meal = Omit<RecommendedMeal, 'id'> & { id: string }
 
 type ManualLog = {
   name: string
@@ -47,8 +44,6 @@ type ManualLog = {
 
 type ReminderTone = 'upcoming' | 'due' | 'follow-up'
 
-const calorieTarget = 2800
-const proteinTarget = 168
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
 
 const emptyManualLog: ManualLog = {
@@ -58,93 +53,34 @@ const emptyManualLog: ManualLog = {
   notes: '',
 }
 
-const initialMeals: Meal[] = [
-  {
-    id: 'breakfast',
-    time: '08:00',
-    slot: 'Breakfast',
-    name: 'Oats, banana, peanut butter',
-    calories: 620,
-    protein: 32,
-    status: 'eaten',
-  },
-  {
-    id: 'snack-am',
-    time: '11:00',
-    slot: 'Snack',
-    name: 'Greek yoghurt and granola',
-    calories: 410,
-    protein: 28,
-    status: 'eaten',
-  },
-  {
-    id: 'lunch',
-    time: '14:00',
-    slot: 'Lunch',
-    name: 'Jollof rice and grilled chicken',
-    calories: 720,
-    protein: 52,
-    status: 'due-soon',
-  },
-  {
-    id: 'snack-pm',
-    time: '17:00',
-    slot: 'Snack',
-    name: 'Tuna melt on sourdough',
-    calories: 480,
-    protein: 38,
-    status: 'upcoming',
-  },
-  {
-    id: 'dinner',
-    time: '20:00',
-    slot: 'Dinner',
-    name: 'Beef stew, rice and plantain',
-    calories: 760,
-    protein: 46,
-    status: 'upcoming',
-  },
-]
-
 const swaps = [
   { name: 'Chicken suya wrap and yoghurt', calories: 690, protein: 50 },
   { name: 'Turkey chilli with rice', calories: 740, protein: 55 },
   { name: 'Salmon, potatoes and greens', calories: 710, protein: 49 },
 ]
 
-const reminderPreviews: {
-  id: string
-  time: string
-  label: string
-  title: string
-  body: string
-  tone: ReminderTone
-}[] = [
-  {
-    id: 'heads-up',
-    time: '13:45',
-    label: 'Meal reminder',
-    title: 'Eat in 15 min',
-    body: 'Jollof rice and grilled chicken · 720 cal · 52g protein',
-    tone: 'upcoming',
-  },
-  {
-    id: 'due',
-    time: '14:00',
-    label: 'Due now',
-    title: 'Time to eat',
-    body: 'Log lunch when you start eating.',
-    tone: 'due',
-  },
-  {
-    id: 'follow-up',
-    time: '14:30',
-    label: 'Follow-up',
-    title: 'Did lunch happen?',
-    body: 'Log it or mark skipped so the day stays accurate.',
-    tone: 'follow-up',
-  },
-]
+function readStoredProfile(): ProfileInputs {
+  if (typeof window === 'undefined') return {}
+
+  const stored = window.localStorage.getItem('forge:onboarding')
+  if (!stored) return {}
+
+  try {
+    const parsed = JSON.parse(stored) as {
+      heightCm?: number
+      currentWeightKg?: number
+      targetWeightKg?: number
+    }
+
+    return {
+      heightCm: parsed.heightCm,
+      currentWeightKg: parsed.currentWeightKg,
+      targetWeightKg: parsed.targetWeightKg,
+    }
+  } catch {
+    return {}
+  }
+}
 
 function reminderAccent(tone: ReminderTone) {
   if (tone === 'due') return 'bg-[var(--color-action-primary)] text-white'
@@ -170,7 +106,8 @@ function urlBase64ToUint8Array(base64String: string) {
 function TodayContent() {
   const router = useRouter()
   const { toast } = useToast()
-  const [meals, setMeals] = useState(initialMeals)
+  const [recommendation, setRecommendation] = useState(() => getDailyRecommendation())
+  const [meals, setMeals] = useState<Meal[]>(() => getDailyRecommendation().meals)
   const [streak, setStreak] = useState(12)
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false)
   const [swapOpen, setSwapOpen] = useState(false)
@@ -183,6 +120,10 @@ function TodayContent() {
   const [pushBusy, setPushBusy] = useState(false)
 
   useEffect(() => {
+    const nextRecommendation = getDailyRecommendation(readStoredProfile())
+    setRecommendation(nextRecommendation)
+    setMeals(nextRecommendation.meals)
+
     if (!('Notification' in window)) return
 
     setNotificationPermission(Notification.permission)
@@ -197,6 +138,10 @@ function TodayContent() {
       setPushSubscribed(false)
       setPushSavedToSupabase(false)
     })
+  }, [])
+
+  const reminderPreviews = useMemo(() => {
+    return getReminderPreviews(readStoredProfile())
   }, [])
 
   const nextMeal = useMemo(() => {
@@ -300,10 +245,14 @@ function TodayContent() {
     const customMeal: Meal = {
       id: `custom-${Date.now()}`,
       time: 'Now',
+      reminderTime: 'Now',
       slot: 'Manual log',
       name,
+      description: manualLog.notes.trim() || 'Logged manually.',
       calories: Math.round(calories),
       protein: Math.round(protein),
+      cookTime: 0,
+      cuisine: 'Custom',
       status: 'eaten',
     }
 
@@ -450,7 +399,7 @@ function TodayContent() {
         <header className="flex items-end justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
-              Wednesday
+              {recommendation.dateLabel}
             </p>
             <h1 className="text-[32px] font-bold leading-[36px] text-[var(--color-text-primary)]">
               Today
@@ -503,9 +452,9 @@ function TodayContent() {
           <SectionHeader title="Nutrition" />
           <MacroRings
             calories={eatenTotals.calories}
-            calorieTarget={calorieTarget}
+            calorieTarget={recommendation.calorieTarget}
             protein={eatenTotals.protein}
-            proteinTarget={proteinTarget}
+            proteinTarget={recommendation.proteinTarget}
           />
         </section>
 
@@ -530,18 +479,12 @@ function TodayContent() {
         <section className="flex flex-col gap-2">
           <SectionHeader title="Training" />
           <WorkoutCard
-            splitLabel="Push day"
-            muscleGroups="Chest · Shoulders · Triceps"
-            exerciseCount={5}
-            estimatedMinutes={52}
-            exercises={[
-              { name: 'Bench press', target: '4 × 8 @ 80kg' },
-              { name: 'Overhead press', target: '3 × 8 @ 50kg' },
-              { name: 'Incline dumbbell press', target: '3 × 10 @ 28kg' },
-              { name: 'Cable fly', target: '3 × 12 @ 17.5kg' },
-              { name: 'Tricep pushdown', target: '3 × 12 @ 32.5kg' },
-            ]}
-            status="upcoming"
+            splitLabel={recommendation.workout.splitLabel}
+            muscleGroups={recommendation.workout.muscleGroups}
+            exerciseCount={recommendation.workout.exerciseCount}
+            estimatedMinutes={recommendation.workout.estimatedMinutes}
+            exercises={recommendation.workout.exercises}
+            status={recommendation.workout.status}
             onComplete={() => toast({ message: 'Workout logged', type: 'success' })}
           />
         </section>

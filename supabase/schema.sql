@@ -20,6 +20,8 @@ add column if not exists target_weight_kg numeric;
 
 alter table public.user_profiles enable row level security;
 
+drop policy if exists "Service role can manage user profiles" on public.user_profiles;
+
 create policy "Service role can manage user profiles"
 on public.user_profiles
 for all
@@ -37,6 +39,8 @@ create table if not exists public.push_subscriptions (
 );
 
 alter table public.push_subscriptions enable row level security;
+
+drop policy if exists "Service role can manage push subscriptions" on public.push_subscriptions;
 
 create policy "Service role can manage push subscriptions"
 on public.push_subscriptions
