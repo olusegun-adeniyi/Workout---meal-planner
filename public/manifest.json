@@ -1,0 +1,39 @@
+{
+  "name": "Forge",
+  "short_name": "Forge",
+  "description": "Meal and workout tracker",
+  "id": "/today",
+  "start_url": "/today",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fafaf9",
+  "theme_color": "#006B5C",
+  "categories": ["health", "fitness", "food"],
+  "icons": [
+    {
+      "src": "/icons/forge-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/forge-maskable-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "url": "/today"
+    },
+    {
+      "name": "Plan",
+      "short_name": "Plan",
+      "url": "/plan"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* ── Font family overrides for Tailwind utilities ── */
+@theme {
+  --font-sans: "Google Sans Flex", "Google Sans", "Google Sans Text", "Product Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Google Sans Mono", "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* ── Design tokens as CSS variables ── */
+:root {
+  /* Background */
+  --color-bg-primary:    #fafaf9;
+  --color-bg-secondary:  #f2f2f0;
+  --color-bg-tertiary:   #ebebea;
+  --color-bg-inverse:    #0a0a0a;
+
+  /* Surface */
+  --color-surface-default:  #ffffff;
+  --color-surface-raised:   #ffffff;
+  --color-surface-sunken:   #f0f0ee;
+  --color-surface-overlay:  rgba(10, 10, 10, 0.50);
+
+  /* Text */
+  --color-text-primary:   #0a0a0a;
+  --color-text-secondary: #5c5c5a;
+  --color-text-tertiary:  #9a9a98;
+  --color-text-disabled:  #c4c4c2;
+  --color-text-inverse:   #ffffff;
+  --color-text-accent:    #006B5C;
+  --color-text-error:     #dc2626;
+  --color-text-success:   #16a34a;
+
+  /* Border */
+  --color-border-default:  rgba(10, 10, 10, 0.06);
+  --color-border-strong:   rgba(10, 10, 10, 0.12);
+  --color-border-focus:    #006B5C;
+  --color-border-error:    #dc2626;
+  --color-border-divider:  rgba(10, 10, 10, 0.05);
+  --color-border-selected: #006B5C;
+
+  /* Action */
+  --color-action-primary:          #006B5C;
+  --color-action-primary-hover:    #00584D;
+  --color-action-primary-subtle:   rgba(0, 107, 92, 0.10);
+  --color-action-secondary:        #ffffff;
+  --color-action-secondary-border: rgba(10, 10, 10, 0.15);
+
+  /* Data / chart */
+  --color-data-calories: #006B5C;
+  --color-data-protein:  #2563eb;
+  --color-data-carbs:    #d97706;
+  --color-data-fat:      #7c3aed;
+  --color-data-track:    rgba(10, 10, 10, 0.07);
+  --color-data-volume:   #0ea5e9;
+
+  /* State */
+  --color-state-success:    #16a34a;
+  --color-state-success-bg: #f0fdf4;
+  --color-state-warning:    #d97706;
+  --color-state-warning-bg: #fffbeb;
+  --color-state-error:      #dc2626;
+  --color-state-error-bg:   #fef2f2;
+  --color-state-skipped:    #9a9a98;
+  --color-state-disabled:   #c4c4c2;
+
+  /* Radius */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-pill: 100px;
+  --radius-full: 9999px;
+}
+
+/* ── Base resets ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
