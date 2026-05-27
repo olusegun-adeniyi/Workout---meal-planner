@@ -463,8 +463,8 @@ export function TextInput({ label, error, helperText, id, className, ...props }:
         className={cn(
           'h-[52px] w-full rounded-[var(--radius-md)] border bg-[var(--color-surface-default)] px-4 text-[15px] text-[var(--color-text-primary)] outline-none transition-all placeholder:text-[var(--color-text-tertiary)]',
           error
-            ? 'border-[var(--color-state-error)] focus:ring-2 focus:ring-[var(--color-state-error)]'
-            : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-2 focus:ring-[var(--color-action-primary)]',
+            ? 'border-[var(--color-state-error)] focus:ring-1 focus:ring-[var(--color-state-error)]'
+            : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-1 focus:ring-[var(--color-action-primary)]',
           'disabled:bg-[var(--color-surface-sunken)] disabled:text-[var(--color-text-disabled)]',
         )}
         style={{ transitionDuration: `${motionTokens.duration.standard}ms` }}
@@ -499,7 +499,7 @@ export function SearchInput({ value, onClear, className, ...props }: SearchInput
       <input
         type="search"
         value={value}
-        className="h-[52px] w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] pl-11 pr-10 text-[15px] text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-2 focus:ring-[var(--color-action-primary)]"
+        className="h-[52px] w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] pl-11 pr-10 text-[15px] text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-1 focus:ring-[var(--color-action-primary)]"
         {...props}
       />
       {value && onClear && (
@@ -542,8 +542,8 @@ export function TextareaField({ label, error, maxLength, id, value, className, .
           className={cn(
             'w-full min-h-[96px] max-h-[200px] resize-none rounded-[var(--radius-md)] border bg-[var(--color-surface-default)] px-4 py-3 text-[15px] text-[var(--color-text-primary)] outline-none transition-all placeholder:text-[var(--color-text-tertiary)]',
             error
-              ? 'border-[var(--color-state-error)] focus:ring-2 focus:ring-[var(--color-state-error)]'
-              : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-2 focus:ring-[var(--color-action-primary)]',
+              ? 'border-[var(--color-state-error)] focus:ring-1 focus:ring-[var(--color-state-error)]'
+              : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-1 focus:ring-[var(--color-action-primary)]',
           )}
           style={{ transitionDuration: `${motionTokens.duration.standard}ms` }}
           {...props}

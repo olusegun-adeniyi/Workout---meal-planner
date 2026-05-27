@@ -412,7 +412,7 @@ function Gallery() {
         <Row label="Card — selected">
           <Card variant="selected" className="w-full p-4">
             <p className="text-[15px] text-[var(--color-text-primary)]">Selected card</p>
-            <p className="text-[13px] text-[var(--color-text-secondary)]">Teal border, tinted bg</p>
+            <p className="text-[13px] text-[var(--color-text-secondary)]">Black border, tinted bg</p>
           </Card>
         </Row>
         <Row label="Card — elevated">

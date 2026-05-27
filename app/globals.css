@@ -26,27 +26,27 @@
   --color-text-tertiary:  #9a9a98;
   --color-text-disabled:  #c4c4c2;
   --color-text-inverse:   #ffffff;
-  --color-text-accent:    #006B5C;
+  --color-text-accent:    #000000;
   --color-text-error:     #dc2626;
   --color-text-success:   #16a34a;
 
   /* Border */
   --color-border-default:  rgba(10, 10, 10, 0.06);
   --color-border-strong:   rgba(10, 10, 10, 0.12);
-  --color-border-focus:    #006B5C;
+  --color-border-focus:    #000000;
   --color-border-error:    #dc2626;
   --color-border-divider:  rgba(10, 10, 10, 0.05);
-  --color-border-selected: #006B5C;
+  --color-border-selected: #000000;
 
   /* Action */
-  --color-action-primary:          #006B5C;
-  --color-action-primary-hover:    #00584D;
-  --color-action-primary-subtle:   rgba(0, 107, 92, 0.10);
+  --color-action-primary:          #000000;
+  --color-action-primary-hover:    #1a1a1a;
+  --color-action-primary-subtle:   rgba(0, 0, 0, 0.08);
   --color-action-secondary:        #ffffff;
   --color-action-secondary-border: rgba(10, 10, 10, 0.15);
 
   /* Data / chart */
-  --color-data-calories: #006B5C;
+  --color-data-calories: #000000;
   --color-data-protein:  #2563eb;
   --color-data-carbs:    #d97706;
   --color-data-fat:      #7c3aed;

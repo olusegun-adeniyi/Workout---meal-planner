@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Forge">
-  <rect width="512" height="512" rx="112" fill="#006B5C"/>
+  <rect width="512" height="512" rx="112" fill="#000000"/>
   <path d="M154 142h218v58H220v70h128v58H220v98h-66V142Z" fill="#FFFFFF"/>
   <path d="M302 360c36-32 54-63 54-94 0-34-20-63-54-88-34 25-54 54-54 88 0 31 18 62 54 94Z" fill="#D5F2EA"/>
 </svg>

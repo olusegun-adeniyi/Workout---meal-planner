@@ -35,8 +35,8 @@ export const colors = {
     secondary: '#5c5c5a', // Labels, meta, descriptions
     tertiary: '#9a9a98',  // Timestamps, placeholders, dimmed values
     disabled: '#c4c4c2',  // Disabled controls, inactive nav items
-    inverse: '#ffffff',   // Text on teal buttons or dark surfaces
-    accent: '#006B5C',    // Active tab labels, tappable links, streak numbers
+    inverse: '#ffffff',   // Text on black buttons or dark surfaces
+    accent: '#000000',    // Active tab labels, tappable links, streak numbers
     error: '#dc2626',     // Validation errors, destructive labels
     success: '#16a34a',   // Confirmed / met-goal labels
   },
@@ -44,23 +44,23 @@ export const colors = {
   border: {
     default: 'rgba(10, 10, 10, 0.06)',  // Cards, inputs at rest
     strong: 'rgba(10, 10, 10, 0.12)',   // Hovered cards, active inputs
-    focus: '#006B5C',                   // Focused input ring (2px)
+    focus: '#000000',                   // Focused input ring (1px)
     error: '#dc2626',                   // Invalid input border
     divider: 'rgba(10, 10, 10, 0.05)', // Row dividers inside lists
-    selected: '#006B5C',                // Selected card or option outline
+    selected: '#000000',                // Selected card or option outline
   },
 
   action: {
-    primary: '#006B5C',                     // Primary CTA background
-    primaryHover: '#00584D',                // Primary button hover / pressed
-    primarySubtle: 'rgba(0, 107, 92, 0.10)', // Tinted bg for active/highlighted states
+    primary: '#000000',                     // Primary CTA background
+    primaryHover: '#1a1a1a',                // Primary button hover / pressed
+    primarySubtle: 'rgba(0, 0, 0, 0.08)',   // Tinted bg for active/highlighted states
     secondary: '#ffffff',                   // Secondary button background
     secondaryBorder: 'rgba(10, 10, 10, 0.15)', // Secondary button border
   },
 
   // Data / chart colours — separate from UI action colours
   data: {
-    calories: '#006B5C', // Calorie ring and bar fill
+    calories: '#000000', // Calorie ring and bar fill
     protein: '#2563eb',  // Protein ring and bar fill
     carbs: '#d97706',    // Carbs ring fill (progress screen only)
     fat: '#7c3aed',      // Fat ring fill (progress screen only)

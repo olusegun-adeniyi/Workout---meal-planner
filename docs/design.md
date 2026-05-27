@@ -41,7 +41,7 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 - "Cute" empty states — useful copy only
 - Emoji in UI copy (one exception: 🔥 on streak milestones only)
 - Multiple accent colours competing for attention
-- iOS-native blue links — all interactive text uses teal or near-black
+- iOS-native blue links — all interactive text uses black or near-black
 
 ---
 
@@ -65,8 +65,8 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 ### 3. Calm by Default, Urgent Only When Earned
 **The app does not shout. Urgency is reserved.**
 - Implementation rules:
-  - Teal (#006B5C) appears only in: primary CTA buttons, active progress fills, streak numbers, and "meal due now" indicators
-  - Error states use muted red, not teal — teal is for action, not alarm
+  - Black (#000000) appears only in: primary CTA buttons, active progress fills, streak numbers, and "meal due now" indicators
+  - Error states use muted red, not black — black is for action, not alarm
   - The only animation that draws attention is the streak counter confetti burst on meal log
   - Use near-black text at reduced opacity for secondary information, not a different colour
 
@@ -121,13 +121,13 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
   - Space between a section header and its first item: 8px
   - Space between the last item and the next section header: 24px
 
-### 10. Teal Is Precious
+### 10. Black Is Precious
 **If everything is emphasised, nothing is.**
 - Implementation rules:
-  - Teal (#006B5C) appears in: primary button backgrounds, filled progress arcs, streak flame number, active bottom nav tab, "due now" meal card accent
+  - Black (#000000) appears in: primary button backgrounds, filled progress arcs, streak flame number, active bottom nav tab, "due now" meal card accent
   - Not in: secondary buttons, informational icons, chart backgrounds, error states, hover states
   - Secondary palette (macro rings, charts) uses blue for protein and amber for carbs — but these are data colours, not UI action colours
-  - When in doubt: use near-black, not teal
+  - When in doubt: use near-black, not black
 
 ---
 
@@ -161,8 +161,8 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 | `color.text.secondary` | `#5c5c5a` | Subheadings, meta labels, secondary descriptions | Primary headings |
 | `color.text.tertiary` | `#9a9a98` | Timestamps, placeholder text, dimmed values | Body copy |
 | `color.text.disabled` | `#c4c4c2` | Disabled form labels, inactive nav items | Active states |
-| `color.text.inverse` | `#ffffff` | Text on teal buttons, text on dark surfaces | Light backgrounds |
-| `color.text.accent` | `#006B5C` | Active tab labels, tappable text links, streak numbers | General body copy |
+| `color.text.inverse` | `#ffffff` | Text on black buttons, text on dark surfaces | Light backgrounds |
+| `color.text.accent` | `#000000` | Active tab labels, tappable text links, streak numbers | General body copy |
 | `color.text.error` | `#dc2626` | Validation errors, destructive action labels | Regular text |
 | `color.text.success` | `#16a34a` | Confirmation messages, met-goal indicators | Neutral labels |
 
@@ -172,7 +172,7 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 |---|---|---|---|
 | `color.border.default` | `rgba(10,10,10,0.06)` | Default card borders, list dividers, input borders | Focus states |
 | `color.border.strong` | `rgba(10,10,10,0.12)` | Hovered card borders, active input borders | Default resting state |
-| `color.border.focus` | `#006B5C` | Focused input ring, selected item outline | General borders |
+| `color.border.focus` | `#000000` | Focused input ring, selected item outline | General borders |
 | `color.border.error` | `#dc2626` | Invalid input borders | Non-error contexts |
 | `color.border.divider` | `rgba(10,10,10,0.05)` | Row dividers inside lists, section dividers | Card outlines |
 
@@ -180,9 +180,9 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 
 | Token | Value | Usage | Avoid |
 |---|---|---|---|
-| `color.action.primary` | `#006B5C` | Primary CTA button background, filled progress arcs, streak counter, "meal due" accent | Secondary buttons, icons, informational colour |
-| `color.action.primary.hover` | `#00584D` | Primary button hover/pressed state | Resting buttons |
-| `color.action.primary.subtle` | `rgba(0, 107, 92, 0.10)` | Tinted card backgrounds for active states, selected row highlight | Anything requiring strong teal |
+| `color.action.primary` | `#000000` | Primary CTA button background, filled progress arcs, streak counter, "meal due" accent | Secondary buttons, icons, informational colour |
+| `color.action.primary.hover` | `#1a1a1a` | Primary button hover/pressed state | Resting buttons |
+| `color.action.primary.subtle` | `rgba(0, 0, 0, 0.08)` | Tinted card backgrounds for active states, selected row highlight | Anything requiring strong black |
 | `color.action.secondary` | `#ffffff` | Secondary button background | Primary CTAs |
 | `color.action.secondary.border` | `rgba(10,10,10,0.15)` | Secondary button border | Primary button borders |
 
@@ -190,7 +190,7 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 
 | Token | Value | Usage | Avoid |
 |---|---|---|---|
-| `color.data.calories` | `#006B5C` | Calorie ring fill, calorie bar in charts | UI action elements |
+| `color.data.calories` | `#000000` | Calorie ring fill, calorie bar in charts | UI action elements |
 | `color.data.protein` | `#2563eb` | Protein ring fill, protein bar in charts | UI action elements |
 | `color.data.carbs` | `#d97706` | Carbs ring fill (progress page only) | Primary UI |
 | `color.data.fat` | `#7c3aed` | Fat ring fill (progress page only) | Primary UI |
@@ -312,10 +312,10 @@ Forge uses flat design. Shadows are minimal and purposeful.
 |---|---|---|
 | `border.default` | `1px solid rgba(10,10,10,0.06)` | Cards, input resting state, list containers |
 | `border.strong` | `1px solid rgba(10,10,10,0.12)` | Hover state on cards, active input |
-| `border.focus` | `2px solid #006B5C` | Focused input field ring |
+| `border.focus` | `1px solid #000000` | Focused input field ring |
 | `border.error` | `1px solid #dc2626` | Invalid input field |
 | `border.divider` | `1px solid rgba(10,10,10,0.05)` | Row dividers inside a list, section breaks |
-| `border.selected` | `2px solid #006B5C` | Selected card, selected option |
+| `border.selected` | `1px solid #000000` | Selected card, selected option |
 
 ---
 
@@ -518,7 +518,7 @@ Screen headers follow a consistent pattern:
 [Label 11px, type.caption]
 ```
 
-**States:** Active (filled icon, teal label), Inactive (outline icon, tertiary label), Pressed (bg.tertiary flash 100ms)
+**States:** Active (filled icon, black label), Inactive (outline icon, tertiary label), Pressed (bg.tertiary flash 100ms)
 
 **Token usage:**
 - Background: `color.surface.default`
@@ -544,7 +544,7 @@ Screen headers follow a consistent pattern:
 **Specs:**
 - Height: **52px**
 - Border-radius: `radius.pill` (100px)
-- Background: `color.action.primary` (#006B5C)
+- Background: `color.action.primary` (#000000)
 - Text: `type.button`, `color.text.inverse`
 - Padding: 0 24px (pill shape distributes this)
 - Margin: Applied externally — buttons themselves have no margin
@@ -555,7 +555,7 @@ Screen headers follow a consistent pattern:
 - Error state: button returns to default state with an error toast below
 
 **Do:** One primary button per screen. Position at the bottom of the form or page.
-**Don't:** Don't use teal background for secondary actions, navigation triggers, or destructive actions.
+**Don't:** Don't use black background for secondary actions, navigation triggers, or destructive actions.
 
 ---
 
@@ -669,7 +669,7 @@ Screen headers follow a consistent pattern:
 - Label: `type.bodySmall`, `color.text.secondary`, 4px above field
 - Placeholder: `color.text.tertiary`
 - Active border: `border.strong`
-- Focus ring: `border.focus` (teal, 2px)
+- Focus ring: `border.focus` (black, 1px)
 - Error border: `border.error`
 - Error message: `type.bodySmall`, `color.text.error`, 4px below field
 - Clear button (X): appears inside field when value exists, 16px icon, taps to clear
@@ -826,7 +826,7 @@ Screen headers follow a consistent pattern:
 
 **States:**
 - **Upcoming** (> 30 min away): context label in `color.text.secondary` ("EAT AT 12:30")
-- **Due soon** (< 30 min): context label in `color.action.primary` teal ("EAT IN 23 MIN")
+- **Due soon** (< 30 min): context label in `color.action.primary` black ("EAT IN 23 MIN")
 - **Overdue** (past meal time, not logged): left border accent `color.state.error`, label "OVERDUE — LOG NOW"
 - **Logged**: card collapses to a smaller confirmed state with a green check — next meal slides up
 - **Skipped**: card shows "Skipped" label, muted styling, next meal shows immediately below
@@ -855,7 +855,7 @@ Screen headers follow a consistent pattern:
 **Status dot colours:**
 - Eaten: `color.state.success` (green)
 - Upcoming: `color.text.disabled` (light gray ring)
-- Due soon: `color.action.primary` (teal, pulsing if overdue)
+- Due soon: `color.action.primary` (black, pulsing if overdue)
 - Skipped: `color.state.skipped` (gray filled)
 
 **Behaviour:** Tapping a logged meal row opens its detail (macros breakdown). Tapping an upcoming row opens the meal detail with log options.
@@ -975,7 +975,7 @@ Screen headers follow a consistent pattern:
 ```
 
 **Ring colours:**
-- Calories: fill `color.data.calories` (#006B5C)
+- Calories: fill `color.data.calories` (#000000)
 - Protein: fill `color.data.protein` (#2563eb)
 - Both tracks: `color.data.track`
 
@@ -1523,8 +1523,8 @@ Screen headers follow a consistent pattern:
 **Checked contrasts:**
 - `color.text.primary` (#0a0a0a) on `color.bg.primary` (#fafaf9): ~18:1 ✓
 - `color.text.secondary` (#5c5c5a) on `color.bg.primary`: ~6.5:1 ✓
-- `color.text.accent` (#006B5C) on `color.surface.default` (#ffffff): ~6.45:1 ✓
-- White text on `color.action.primary` (#006B5C): ~6.45:1 ✓
+- `color.text.accent` (#000000) on `color.surface.default` (#ffffff): ~6.45:1 ✓
+- White text on `color.action.primary` (#000000): ~6.45:1 ✓
 
 ### Text Scaling
 
@@ -1549,7 +1549,7 @@ Screen headers follow a consistent pattern:
 ### Focus States
 
 - All interactive elements must show a visible focus ring on keyboard navigation
-- Focus ring: `border.focus` (2px teal) or equivalent high-contrast ring
+- Focus ring: `border.focus` (1px black) or equivalent high-contrast ring
 - Do not use `outline: none` without providing an alternative focus indicator
 
 ### Reduced Motion
@@ -1581,10 +1581,10 @@ Define all tokens in `app/globals.css` inside a `@theme` block:
   --color-text-primary: #0a0a0a;
   --color-text-secondary: #5c5c5a;
   --color-text-tertiary: #9a9a98;
-  --color-text-accent: #006B5C;
-  --color-action-primary: #006B5C;
-  --color-action-primary-hover: #00584D;
-  --color-data-calories: #006B5C;
+  --color-text-accent: #000000;
+  --color-action-primary: #000000;
+  --color-action-primary-hover: #1a1a1a;
+  --color-data-calories: #000000;
   --color-data-protein: #2563eb;
   --color-border-default: rgba(10, 10, 10, 0.06);
   --color-border-strong: rgba(10, 10, 10, 0.12);
@@ -1606,7 +1606,7 @@ Reference tokens in Tailwind classes: `bg-[var(--color-bg-primary)]` or configur
 - Extend via wrapper components: `components/today/next-action-card.tsx` wraps a shadcn `Card` with its own variants
 - Use shadcn's `cn()` utility for conditional class merging
 - Override shadcn's default blue/gray palette in `globals.css` via its CSS variable contract (`--primary`, `--card`, etc.)
-- Never reach for shadcn's default `Button` for primary CTAs — the pill shape and teal colour require a custom variant
+- Never reach for shadcn's default `Button` for primary CTAs — the pill shape and black colour require a custom variant
 
 ### Component Creation Rules
 
@@ -1620,8 +1620,8 @@ Reference tokens in Tailwind classes: `bg-[var(--color-bg-primary)]` or configur
 - **Never hardcode a hex colour** in a component. Reference a CSS variable or Tailwind token.
 - **Never hardcode a pixel spacing value** outside the spacing scale. Use `space.4` (16px) not `p-[17px]`.
 - **Never use a font-size not in the type scale.** If you need a new size, define it in the token system first.
-- **Never invent a new accent colour.** If teal doesn't work for the use case, question whether an accent is needed at all.
-- Opacity variants of a colour (e.g., `color.action.primary.subtle`) are defined tokens, not ad-hoc `bg-teal/10`.
+- **Never invent a new accent colour.** If black doesn't work for the use case, question whether an accent is needed at all.
+- Opacity variants of a colour (e.g., `color.action.primary.subtle`) are defined tokens, not ad-hoc `bg-black/10`.
 
 ### State Completeness Rule
 
@@ -1650,7 +1650,7 @@ Every data-displaying screen must implement:
 |---|---|
 | Use `#fafaf9` as the page background | Use pure white `#ffffff` as the page background |
 | Use 1px borders to define cards | Add drop shadows to cards |
-| Use `#006B5C` teal for the single primary action on a screen | Use teal for icons, section headers, decorative elements |
+| Use `#000000` black for the single primary action on a screen | Use black for icons, section headers, decorative elements |
 | Use Google Sans Mono for every number that matters | Mix sans and mono arbitrarily |
 | Keep border-radius consistent per component type | Use different radii on similar components within the same screen |
 | Leave generous vertical space between sections (24–32px) | Stack sections with < 16px between them |
@@ -1690,7 +1690,7 @@ Use this checklist before marking any screen as complete.
 ### Visual Hierarchy
 - [ ] The most important element on the screen is visually dominant (size, weight, or position)
 - [ ] Secondary content does not compete with primary content for attention
-- [ ] Teal (#006B5C) appears in at most one primary action per screen
+- [ ] Black (#000000) appears in at most one primary action per screen
 
 ### Spacing Consistency
 - [ ] Horizontal page margin is 16px on both sides
@@ -1717,7 +1717,7 @@ Use this checklist before marking any screen as complete.
 ### Accessibility
 - [ ] All touch targets are minimum 44×44px
 - [ ] All icon-only elements have `aria-label`
-- [ ] Focus states are visible (teal outline ring)
+- [ ] Focus states are visible (black outline ring)
 - [ ] No information is conveyed by colour alone
 - [ ] Screen reader labels are correct on metric cards and progress rings
 - [ ] `prefers-reduced-motion` is respected
