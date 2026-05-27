@@ -196,7 +196,7 @@ function getMealStatus(time: string, now = new Date()): MealStatus {
 
   const minutesUntil = (mealTime.getTime() - now.getTime()) / 60000
 
-  if (minutesUntil < -45) return 'skipped'
+  if (minutesUntil < -45) return 'due-soon'
   if (minutesUntil <= 30) return 'due-soon'
   return 'upcoming'
 }

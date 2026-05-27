@@ -34,6 +34,14 @@ type NavTab = 'today' | 'plan' | 'progress' | 'log'
 type ManualLogField = 'name' | 'calories' | 'protein' | 'notes'
 
 type Meal = Omit<RecommendedMeal, 'id'> & { id: string }
+type LoggedMeal = {
+  id: string
+  time: string
+  slot: string
+  name: string
+  calories: number
+  protein: number
+}
 
 type ManualLog = {
   name: string
@@ -107,8 +115,9 @@ function TodayContent() {
   const router = useRouter()
   const { toast } = useToast()
   const [recommendation, setRecommendation] = useState(() => getDailyRecommendation())
-  const [meals, setMeals] = useState<Meal[]>(() => getDailyRecommendation().meals)
-  const [streak, setStreak] = useState(12)
+  const [recommendedMeals, setRecommendedMeals] = useState<Meal[]>(() => getDailyRecommendation().meals)
+  const [loggedMeals, setLoggedMeals] = useState<LoggedMeal[]>([])
+  const [streak] = useState(0)
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false)
   const [swapOpen, setSwapOpen] = useState(false)
   const [manualOpen, setManualOpen] = useState(false)
@@ -122,7 +131,7 @@ function TodayContent() {
   useEffect(() => {
     const nextRecommendation = getDailyRecommendation(readStoredProfile())
     setRecommendation(nextRecommendation)
-    setMeals(nextRecommendation.meals)
+    setRecommendedMeals(nextRecommendation.meals)
 
     if (!('Notification' in window)) return
 
@@ -145,14 +154,13 @@ function TodayContent() {
   }, [])
 
   const nextMeal = useMemo(() => {
-    return meals.find((meal) => meal.status === 'due-soon')
-      ?? meals.find((meal) => meal.status === 'upcoming')
-  }, [meals])
+    return recommendedMeals.find((meal) => meal.status === 'due-soon')
+      ?? recommendedMeals.find((meal) => meal.status === 'upcoming')
+  }, [recommendedMeals])
 
   const eatenTotals = useMemo(() => {
-    return meals.reduce(
+    return loggedMeals.reduce(
       (totals, meal) => {
-        if (meal.status !== 'eaten') return totals
         return {
           calories: totals.calories + meal.calories,
           protein: totals.protein + meal.protein,
@@ -160,12 +168,12 @@ function TodayContent() {
       },
       { calories: 0, protein: 0 },
     )
-  }, [meals])
+  }, [loggedMeals])
 
   function logMeal() {
     if (!nextMeal) return
 
-    setMeals((currentMeals) => {
+    setRecommendedMeals((currentMeals) => {
       let promotedNext = false
       return currentMeals.map((meal) => {
         if (meal.id === nextMeal.id) {
@@ -178,14 +186,24 @@ function TodayContent() {
         return meal
       })
     })
-    setStreak((current) => current + 1)
+    setLoggedMeals((currentMeals) => [
+      ...currentMeals,
+      {
+        id: `log-${nextMeal.id}-${Date.now()}`,
+        time: nextMeal.time,
+        slot: nextMeal.slot,
+        name: nextMeal.name,
+        calories: nextMeal.calories,
+        protein: nextMeal.protein,
+      },
+    ])
     toast({ message: `${nextMeal.slot} logged`, type: 'success' })
   }
 
   function skipMeal() {
     if (!nextMeal) return
 
-    setMeals((currentMeals) => {
+    setRecommendedMeals((currentMeals) => {
       let promotedNext = false
       return currentMeals.map((meal) => {
         if (meal.id === nextMeal.id) {
@@ -198,7 +216,6 @@ function TodayContent() {
         return meal
       })
     })
-    setStreak(0)
     setSkipConfirmOpen(false)
     toast({ message: `${nextMeal.slot} skipped`, type: 'neutral' })
   }
@@ -206,7 +223,7 @@ function TodayContent() {
   function swapMeal(replacement: (typeof swaps)[number]) {
     if (!nextMeal) return
 
-    setMeals((currentMeals) => currentMeals.map((meal) => (
+    setRecommendedMeals((currentMeals) => currentMeals.map((meal) => (
       meal.id === nextMeal.id
         ? {
             ...meal,
@@ -242,21 +259,16 @@ function TodayContent() {
       return
     }
 
-    const customMeal: Meal = {
+    const customMeal: LoggedMeal = {
       id: `custom-${Date.now()}`,
       time: 'Now',
-      reminderTime: 'Now',
       slot: 'Manual log',
       name,
-      description: manualLog.notes.trim() || 'Logged manually.',
       calories: Math.round(calories),
       protein: Math.round(protein),
-      cookTime: 0,
-      cuisine: 'Custom',
-      status: 'eaten',
     }
 
-    setMeals((currentMeals) => [...currentMeals, customMeal])
+    setLoggedMeals((currentMeals) => [...currentMeals, customMeal])
     setManualLog(emptyManualLog)
     setManualErrors({})
     setManualOpen(false)
@@ -459,9 +471,9 @@ function TodayContent() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <SectionHeader title="Meals" />
+          <SectionHeader title="Meal recommendations" />
           <Card variant="list">
-            {meals.map((meal, index) => (
+            {recommendedMeals.map((meal, index) => (
               <MealTimelineRow
                 key={meal.id}
                 time={meal.time}
@@ -470,11 +482,31 @@ function TodayContent() {
                 calories={meal.calories}
                 protein={meal.protein}
                 status={meal.status}
-                isLast={index === meals.length - 1}
+                isLast={index === recommendedMeals.length - 1}
               />
             ))}
           </Card>
         </section>
+
+        {loggedMeals.length > 0 && (
+          <section className="flex flex-col gap-2">
+            <SectionHeader title="Meals logged" />
+            <Card variant="list">
+              {loggedMeals.map((meal, index) => (
+                <MealTimelineRow
+                  key={meal.id}
+                  time={meal.time}
+                  slot={meal.slot}
+                  mealName={meal.name}
+                  calories={meal.calories}
+                  protein={meal.protein}
+                  status="eaten"
+                  isLast={index === loggedMeals.length - 1}
+                />
+              ))}
+            </Card>
+          </section>
+        )}
 
         <section className="flex flex-col gap-2">
           <SectionHeader title="Training" />
