@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, type ReactNode, useEffect, useId, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, Clock3 } from 'lucide-react'
 import {
@@ -23,6 +23,7 @@ import {
   useToast,
 } from '@/components/component-library'
 import { iconSize } from '@/lib/tokens'
+import { getFoodIllustrationSrc } from '@/lib/food-illustrations'
 import {
   type ProfileInputs,
   type RecommendedMeal,
@@ -33,7 +34,7 @@ import {
 type NavTab = 'today' | 'plan' | 'progress' | 'log'
 type ManualLogField = 'name' | 'calories' | 'protein' | 'notes'
 
-type Meal = Omit<RecommendedMeal, 'id'> & { id: string }
+type Meal = RecommendedMeal
 type LoggedMeal = {
   id: string
   time: string
@@ -96,6 +97,163 @@ function reminderAccent(tone: ReminderTone) {
   return 'bg-[var(--color-action-primary-subtle)] text-[var(--color-text-accent)]'
 }
 
+function DesktopPanel({
+  children,
+  className = '',
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <section className={`rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] p-5 ${className}`}>
+      {children}
+    </section>
+  )
+}
+
+function MealIllustration({
+  slot,
+  className = '',
+}: {
+  slot: string
+  className?: string
+}) {
+  const filterId = `watercolor-${slot}-${useId().replace(/:/g, '')}`
+  const palette = {
+    breakfast: {
+      wash: '#fff4c7',
+      accent: '#d97706',
+      green: '#83c56b',
+      red: '#f97316',
+      title: 'Porridge bowl illustration',
+    },
+    brunch: {
+      wash: '#f8e8ff',
+      accent: '#7c3aed',
+      green: '#a3e635',
+      red: '#dc2626',
+      title: 'Yoghurt bowl illustration',
+    },
+    lunch: {
+      wash: '#ffe8c7',
+      accent: '#dc2626',
+      green: '#22c55e',
+      red: '#f97316',
+      title: 'Rice and chicken illustration',
+    },
+    dinner: {
+      wash: '#fde2c4',
+      accent: '#92400e',
+      green: '#65a30d',
+      red: '#dc2626',
+      title: 'Stew rice and plantain illustration',
+    },
+  }[slot] ?? {
+    wash: '#f2f2f0',
+    accent: '#9a9a98',
+    green: '#16a34a',
+    red: '#d97706',
+    title: 'Meal illustration',
+  }
+
+  return (
+    <svg
+      viewBox="0 0 220 150"
+      role="img"
+      aria-label={palette.title}
+      className={className}
+    >
+      <filter id={filterId} x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="8" />
+        <feDisplacementMap in="SourceGraphic" scale="1.4" />
+      </filter>
+      <ellipse cx="106" cy="124" rx="76" ry="13" fill="#dbeafe" opacity="0.45" filter={`url(#${filterId})`} />
+      <path
+        d="M55 93c22-32 89-37 124-11 13 10 15 24 3 32-32 20-119 21-145 2-10-8-5-17 18-23Z"
+        fill={palette.wash}
+        opacity="0.75"
+        filter={`url(#${filterId})`}
+      />
+      <path
+        d="M51 86c21-25 92-32 126-9 14 9 13 25-2 34-32 19-112 19-142 1-14-8-6-19 18-26Z"
+        fill="none"
+        stroke="#7c3f18"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.72"
+      />
+      {slot === 'breakfast' && (
+        <>
+          <ellipse cx="106" cy="78" rx="58" ry="31" fill="#fff7d6" opacity="0.9" />
+          <ellipse cx="106" cy="76" rx="44" ry="20" fill="#f8dca4" opacity="0.75" filter={`url(#${filterId})`} />
+          <path d="M78 66c18 8 34 8 57 0" fill="none" stroke={palette.accent} strokeWidth="4" strokeLinecap="round" opacity="0.55" />
+          <circle cx="137" cy="82" r="11" fill="#facc15" opacity="0.82" />
+          <path d="M131 77c8 3 12 7 14 12" fill="none" stroke="#854d0e" strokeWidth="2" opacity="0.45" />
+        </>
+      )}
+      {slot === 'brunch' && (
+        <>
+          <path d="M72 65h88l-10 45H82L72 65Z" fill="#f8fafc" stroke="#7c3f18" strokeWidth="3" opacity="0.88" />
+          <path d="M84 76c23 10 45 10 66 0l-5 24H88Z" fill="#f5d0fe" opacity="0.8" filter={`url(#${filterId})`} />
+          <circle cx="94" cy="77" r="6" fill={palette.red} opacity="0.78" />
+          <circle cx="124" cy="83" r="5" fill="#2563eb" opacity="0.7" />
+          <path d="M104 68c13 8 27 8 41 0" fill="none" stroke="#b45309" strokeWidth="4" strokeLinecap="round" opacity="0.45" />
+        </>
+      )}
+      {slot === 'lunch' && (
+        <>
+          <ellipse cx="113" cy="82" rx="57" ry="29" fill="#fff7ed" stroke="#7c3f18" strokeWidth="3" opacity="0.9" />
+          <path d="M75 82c22-12 57-14 77-1-20 18-55 21-77 1Z" fill="#f97316" opacity="0.75" filter={`url(#${filterId})`} />
+          <path d="M132 62c18 7 28 19 27 34-20 0-33-8-39-22 4-6 8-10 12-12Z" fill="#f8d9b0" stroke="#7c3f18" strokeWidth="2.5" opacity="0.9" />
+          <path d="M73 99c12-11 27-14 43-8" fill="none" stroke={palette.green} strokeWidth="7" strokeLinecap="round" opacity="0.58" />
+        </>
+      )}
+      {slot === 'dinner' && (
+        <>
+          <ellipse cx="105" cy="83" rx="58" ry="29" fill="#fff7ed" stroke="#7c3f18" strokeWidth="3" opacity="0.9" />
+          <path d="M72 78c28-15 60-13 90 2-16 23-70 29-90-2Z" fill="#b45309" opacity="0.7" filter={`url(#${filterId})`} />
+          <path d="M142 96c13-10 27-10 41-1-9 12-24 16-40 10Z" fill="#facc15" stroke="#92400e" strokeWidth="2.5" opacity="0.85" />
+          <circle cx="95" cy="76" r="7" fill={palette.red} opacity="0.65" />
+          <path d="M70 99c17 7 36 9 57 4" fill="none" stroke={palette.green} strokeWidth="5" strokeLinecap="round" opacity="0.55" />
+        </>
+      )}
+      <path
+        d="M56 91c24-20 86-27 123-8M44 107c33 20 111 22 141 2"
+        fill="none"
+        stroke="#7c3f18"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        opacity="0.42"
+      />
+    </svg>
+  )
+}
+
+function FoodArtwork({
+  meal,
+  className = '',
+  imageClassName = '',
+}: {
+  meal: Pick<Meal, 'id' | 'name'>
+  className?: string
+  imageClassName?: string
+}) {
+  const illustrationSrc = getFoodIllustrationSrc(meal)
+
+  if (illustrationSrc) {
+    return (
+      <img
+        src={illustrationSrc}
+        alt={`Watercolor illustration of ${meal.name}`}
+        className={`object-contain ${className} ${imageClassName}`}
+      />
+    )
+  }
+
+  return <MealIllustration slot={meal.id} className={className} />
+}
+
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
   const base64 = `${base64String}${padding}`
@@ -127,6 +285,7 @@ function TodayContent() {
   const [pushSubscribed, setPushSubscribed] = useState(false)
   const [pushSavedToSupabase, setPushSavedToSupabase] = useState(false)
   const [pushBusy, setPushBusy] = useState(false)
+  const [notificationOpen, setNotificationOpen] = useState(false)
 
   useEffect(() => {
     const nextRecommendation = getDailyRecommendation(readStoredProfile())
@@ -406,8 +565,8 @@ function TodayContent() {
   }
 
   return (
-    <ScreenContainer>
-      <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-6 pb-8 pt-5">
+    <ScreenContainer className="lg:bg-[var(--color-surface-default)] lg:px-0">
+      <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-6 pb-8 pt-5 lg:hidden">
         <header className="flex items-end justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
@@ -417,8 +576,57 @@ function TodayContent() {
               Today
             </h1>
           </div>
-          <StreakCounter days={streak} />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Push reminders"
+              onClick={() => setNotificationOpen((open) => !open)}
+              className="group relative flex h-10 w-10 items-center justify-center rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+            >
+              <Bell size={iconSize.md} aria-hidden="true" />
+              <span className="pointer-events-none absolute right-0 top-12 z-30 w-[220px] rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] px-3 py-2 text-left text-[13px] leading-[18px] text-[var(--color-text-secondary)] opacity-0 shadow-[0_4px_12px_rgba(0,0,0,0.10)] transition-opacity group-hover:opacity-100">
+                {pushSubscribed ? 'Meal-time reminders are enabled.' : 'Meal-time reminders are off. Click to manage notifications.'}
+              </span>
+            </button>
+            <StreakCounter days={streak} />
+          </div>
         </header>
+
+        {notificationOpen && (
+          <Card className="flex flex-col gap-4 p-4">
+            <div>
+              <Toggle
+                checked={pushSubscribed}
+                onChange={(checked) => {
+                  if (pushBusy) return
+                  if (checked) {
+                    enablePushReminders()
+                  } else {
+                    disablePushReminders()
+                  }
+                }}
+                label="Meal-time push notifications"
+              />
+              <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
+                {notificationPermission === 'granted'
+                  ? pushSavedToSupabase
+                    ? 'Forge can remind you when a meal is due.'
+                    : 'This browser can receive test reminders. Supabase is still needed for automatic reminders.'
+                  : 'Your browser will ask for permission before reminders are enabled.'}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              loading={pushBusy}
+              disabled={!pushSubscribed}
+              onClick={sendTestPush}
+            >
+              Send test reminder
+            </Button>
+          </Card>
+        )}
 
         <section>
           {skipConfirmOpen && nextMeal ? (
@@ -429,7 +637,7 @@ function TodayContent() {
               <h2 className="mt-1 text-[24px] font-semibold leading-[28px] text-[var(--color-text-primary)]">
                 {nextMeal.name}
               </h2>
-              <p className="mt-1 font-mono text-[15px] text-[var(--color-text-secondary)]">
+              <p className="mt-1 text-[15px] text-[var(--color-text-secondary)]">
                 {nextMeal.calories} cal · {nextMeal.protein}g protein
               </p>
               <div className="mt-4 flex gap-2">
@@ -522,43 +730,6 @@ function TodayContent() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <SectionHeader title="Push reminders" />
-          <Card className="flex flex-col gap-4 p-4">
-            <div>
-              <Toggle
-                checked={pushSubscribed}
-                onChange={(checked) => {
-                  if (pushBusy) return
-                  if (checked) {
-                    enablePushReminders()
-                  } else {
-                    disablePushReminders()
-                  }
-                }}
-                label="Meal-time push notifications"
-              />
-              <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
-                {notificationPermission === 'granted'
-                  ? pushSavedToSupabase
-                    ? 'Forge can remind you when a meal is due.'
-                    : 'This browser can receive test reminders. Supabase is still needed for automatic reminders.'
-                  : 'Your browser will ask for permission before reminders are enabled.'}
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              loading={pushBusy}
-              disabled={!pushSubscribed}
-              onClick={sendTestPush}
-            >
-              Send test reminder
-            </Button>
-          </Card>
-        </section>
-
-        <section className="flex flex-col gap-2">
           <SectionHeader title="Reminder previews" />
           <Card variant="list">
             {reminderPreviews.map((reminder, index) => {
@@ -579,7 +750,7 @@ function TodayContent() {
                       <p className="truncate text-[13px] font-medium text-[var(--color-text-secondary)]">
                         {reminder.label}
                       </p>
-                      <p className="font-mono text-[13px] text-[var(--color-text-tertiary)]">
+                      <p className="text-[13px] text-[var(--color-text-tertiary)]">
                         {reminder.time}
                       </p>
                     </div>
@@ -595,6 +766,239 @@ function TodayContent() {
             })}
           </Card>
         </section>
+      </div>
+
+      <div className="hidden min-h-screen w-full bg-[var(--color-surface-default)] px-5 pb-10 pt-5 text-[var(--color-text-primary)] lg:block">
+        <header className="relative mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action-primary)] text-[20px] font-bold text-[var(--color-text-inverse)]">
+              F
+            </div>
+            <span className="rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] px-4 py-2 text-[13px] font-medium text-[var(--color-text-secondary)]">
+              {recommendation.dateLabel}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="Push reminders"
+              onClick={() => setNotificationOpen((open) => !open)}
+              className="group relative flex h-10 w-10 items-center justify-center rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+            >
+              <Bell size={iconSize.md} aria-hidden="true" />
+              <span className="pointer-events-none absolute right-0 top-12 z-30 w-[220px] rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] px-3 py-2 text-left text-[13px] leading-[18px] text-[var(--color-text-secondary)] opacity-0 shadow-[0_4px_12px_rgba(0,0,0,0.10)] transition-opacity group-hover:opacity-100">
+                {pushSubscribed ? 'Meal-time reminders are enabled.' : 'Meal-time reminders are off. Click to manage notifications.'}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setManualOpen(true)}
+              className="rounded-[var(--radius-full)] bg-[var(--color-action-primary)] px-5 py-2 text-[14px] font-medium text-[var(--color-text-inverse)] transition-opacity hover:opacity-90"
+            >
+              Log meal
+            </button>
+          </div>
+          {notificationOpen && (
+            <Card className="absolute right-0 top-12 z-20 flex w-[360px] flex-col gap-4 p-4">
+              <div>
+                <Toggle
+                  checked={pushSubscribed}
+                  onChange={(checked) => {
+                    if (pushBusy) return
+                    if (checked) {
+                      enablePushReminders()
+                    } else {
+                      disablePushReminders()
+                    }
+                  }}
+                  label="Meal-time push notifications"
+                />
+                <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
+                  {notificationPermission === 'granted'
+                    ? pushSavedToSupabase
+                      ? 'Forge can remind you when a meal is due.'
+                      : 'This browser can receive test reminders. Supabase is still needed for automatic reminders.'
+                    : 'Your browser will ask for permission before reminders are enabled.'}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                loading={pushBusy}
+                disabled={!pushSubscribed}
+                onClick={sendTestPush}
+              >
+                Send test reminder
+              </Button>
+            </Card>
+          )}
+        </header>
+
+        <main className="grid grid-cols-12 gap-5">
+          <DesktopPanel className="relative col-span-4 min-h-[320px] overflow-hidden">
+            <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">Next up</p>
+            {nextMeal ? (
+              <>
+                <FoodArtwork
+                  meal={nextMeal}
+                  className="pointer-events-none absolute -bottom-5 -right-6 h-44 w-60 opacity-95"
+                />
+                <div className="relative mt-12 max-w-[68%]">
+                <p className="text-[15px] text-[var(--color-text-tertiary)]">{nextMeal.time} · {nextMeal.slot}</p>
+                <h1 className="mt-4 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">{nextMeal.name}</h1>
+                <p className="mt-3 text-[15px] text-[var(--color-text-secondary)]">
+                  {nextMeal.calories} cal · {nextMeal.protein}g protein
+                </p>
+                <div className="mt-8 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={logMeal}
+                    className="min-w-[112px] rounded-[var(--radius-full)] bg-[var(--color-action-primary)] px-8 py-3 text-[14px] font-medium text-[var(--color-text-inverse)] transition-opacity hover:opacity-90"
+                  >
+                    Ate it
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSwapOpen(true)}
+                    className="rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-action-secondary)] px-5 py-3 text-[14px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+                  >
+                    Swap
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSkipConfirmOpen(true)}
+                    className="rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-action-secondary)] px-5 py-3 text-[14px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+                  >
+                    Skip
+                  </button>
+                </div>
+                </div>
+              </>
+            ) : (
+              <div className="mt-12">
+                <h1 className="text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">Meals clear</h1>
+                <p className="mt-3 text-[15px] text-[var(--color-text-secondary)]">You have no upcoming meal recommendations left for today.</p>
+              </div>
+            )}
+          </DesktopPanel>
+
+          <DesktopPanel className="col-span-4 min-h-[320px] bg-[url('/images/desktop-background.png')] bg-cover bg-center">
+            <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">Nutrition</p>
+            <div className="mt-10 rounded-[var(--radius-lg)] bg-white/75 p-4 backdrop-blur-[2px]">
+              <MacroRings
+                calories={eatenTotals.calories}
+                calorieTarget={recommendation.calorieTarget}
+                protein={eatenTotals.protein}
+                proteinTarget={recommendation.proteinTarget}
+                className="border-0 bg-transparent p-0"
+              />
+            </div>
+            <p className="mt-8 text-[15px] leading-[22px] text-[var(--color-text-secondary)]">
+              Your meals start empty. Log food as you eat so Forge can track today accurately.
+            </p>
+          </DesktopPanel>
+
+          <DesktopPanel className="col-span-4 min-h-[320px]">
+            <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">Training</p>
+            <div className="mt-12">
+              <p className="text-[15px] font-medium text-[var(--color-text-secondary)]">{recommendation.workout.splitLabel}</p>
+              <h2 className="mt-3 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">{recommendation.workout.muscleGroups}</h2>
+              <p className="mt-3 text-[15px] text-[var(--color-text-secondary)]">
+                {recommendation.workout.exerciseCount} exercises · est. {recommendation.workout.estimatedMinutes} min
+              </p>
+              <div className="mt-8 grid gap-2">
+                {recommendation.workout.exercises.slice(0, 3).map((exercise) => (
+                  <div key={exercise.name} className="rounded-[var(--radius-md)] bg-[var(--color-bg-secondary)] px-4 py-3">
+                    <p className="text-[15px] font-medium text-[var(--color-text-primary)]">{exercise.name}</p>
+                    <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">{exercise.target}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DesktopPanel>
+
+          <DesktopPanel className="col-span-5 min-h-[360px]">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">Today&apos;s plan</p>
+                <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">Meal recommendations</h2>
+              </div>
+              <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-3 py-1 text-[13px] font-medium text-[var(--color-text-secondary)]">
+                {recommendedMeals.length} meals
+              </span>
+            </div>
+            <div className="mt-6 grid gap-3">
+              {recommendedMeals.map((meal) => (
+                <div key={meal.id} className="grid grid-cols-[70px_72px_1fr_auto] items-center gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] p-4">
+                  <p className="text-[14px] text-[var(--color-text-tertiary)]">{meal.time}</p>
+                  <div className="flex h-16 w-16 items-center justify-center overflow-visible">
+                    <FoodArtwork meal={meal} className="h-16 w-20" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-[17px] font-medium text-[var(--color-text-primary)]">{meal.name}</p>
+                    <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">{meal.calories} cal · {meal.protein}g protein</p>
+                  </div>
+                  <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-3 py-1 text-[12px] font-medium text-[var(--color-text-secondary)]">
+                    {meal.status.replace('-', ' ')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </DesktopPanel>
+
+          <div className="col-span-7 grid grid-cols-2 gap-5">
+            <DesktopPanel className="col-span-2 min-h-[170px]">
+              <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">Logged</p>
+              <h2 className="mt-5 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">{loggedMeals.length} meals</h2>
+              <p className="mt-2 text-[15px] leading-[22px] text-[var(--color-text-secondary)]">
+                {loggedMeals.length > 0 ? `${eatenTotals.calories} calories logged today.` : 'Nothing eaten has been logged yet.'}
+              </p>
+            </DesktopPanel>
+
+            <DesktopPanel className="col-span-2 min-h-[170px]">
+              <div className="grid grid-cols-3 gap-4">
+                {reminderPreviews.map((reminder) => {
+                  const Icon = reminder.tone === 'due' ? Bell : Clock3
+
+                  return (
+                    <div key={reminder.id} className="rounded-[var(--radius-lg)] bg-[var(--color-bg-secondary)] p-4">
+                      <div className={`flex h-9 w-9 items-center justify-center rounded-[var(--radius-full)] ${reminderAccent(reminder.tone)}`}>
+                        <Icon size={iconSize.sm} aria-hidden="true" />
+                      </div>
+                      <p className="mt-4 text-[13px] font-medium text-[var(--color-text-tertiary)]">{reminder.time} · {reminder.label}</p>
+                      <p className="mt-1 text-[17px] font-medium text-[var(--color-text-primary)]">{reminder.title}</p>
+                      <p className="mt-1 line-clamp-2 text-[14px] leading-[20px] text-[var(--color-text-secondary)]">{reminder.body}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            </DesktopPanel>
+          </div>
+        </main>
+
+        <nav
+          aria-label="Primary"
+          className="fixed bottom-6 left-1/2 z-30 flex h-14 -translate-x-1/2 items-center gap-1 rounded-[var(--radius-full)] bg-[var(--color-action-primary)] p-1 text-[15px] font-medium shadow-[0_8px_32px_rgba(0,0,0,0.12)]"
+        >
+          <span className="flex h-12 items-center justify-center rounded-[var(--radius-full)] bg-[var(--color-surface-default)] px-7 text-[var(--color-text-primary)]">
+            Today
+          </span>
+          <button
+            type="button"
+            onClick={() => router.push('/plan')}
+            className="flex h-12 items-center justify-center rounded-[var(--radius-full)] px-7 text-[var(--color-text-inverse)] transition-colors hover:bg-white/10"
+          >
+            Plan
+          </button>
+          <button
+            type="button"
+            onClick={() => toast({ message: 'Progress is next', type: 'neutral' })}
+            className="flex h-12 items-center justify-center rounded-[var(--radius-full)] px-7 text-[var(--color-text-inverse)] transition-colors hover:bg-white/10"
+          >
+            Progress
+          </button>
+        </nav>
       </div>
 
       <BottomSheet open={manualOpen} onClose={() => setManualOpen(false)} title="Log what you ate">
@@ -640,7 +1044,7 @@ function TodayContent() {
           {swaps.map((meal) => (
             <Card key={meal.name} className="p-4" onClick={() => swapMeal(meal)}>
               <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">{meal.name}</p>
-              <p className="font-mono text-[13px] text-[var(--color-text-secondary)]">
+              <p className="text-[13px] text-[var(--color-text-secondary)]">
                 {meal.calories} cal · {meal.protein}g protein
               </p>
             </Card>
@@ -648,11 +1052,13 @@ function TodayContent() {
         </div>
       </BottomSheet>
 
-      <FloatingActionButton
-        label="Log something"
-        onClick={() => setManualOpen(true)}
-      />
-      <BottomNav active="today" onChange={handleNav} />
+      <div className="lg:hidden">
+        <FloatingActionButton
+          label="Log something"
+          onClick={() => setManualOpen(true)}
+        />
+        <BottomNav active="today" onChange={handleNav} />
+      </div>
     </ScreenContainer>
   )
 }

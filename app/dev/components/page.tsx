@@ -109,7 +109,7 @@ function TokenBoard() {
                 <div className="h-10 border-b border-[var(--color-border-divider)]" style={{ background: value }} />
                 <div className="p-2">
                   <p className="truncate text-[11px] font-medium text-[var(--color-text-primary)]">{name}</p>
-                  <p className="truncate font-mono text-[11px] text-[var(--color-text-tertiary)]">{value}</p>
+                  <p className="truncate text-[11px] text-[var(--color-text-tertiary)]">{value}</p>
                 </div>
               </div>
             ))}
@@ -123,10 +123,10 @@ function TokenBoard() {
               <div key={name} className="flex items-center justify-between gap-4 py-2">
                 <div>
                   <p className="text-[12px] font-medium text-[var(--color-text-primary)]">{name}</p>
-                  <p className="font-mono text-[11px] text-[var(--color-text-tertiary)]">{size}/{height}</p>
+                  <p className="text-[11px] text-[var(--color-text-tertiary)]">{size}/{height}</p>
                 </div>
                 <p
-                  className={name === 'display' ? 'font-mono font-bold' : 'font-semibold'}
+                  className={name === 'display' ? 'font-bold' : 'font-semibold'}
                   style={{ fontSize: size, lineHeight: `${height}px` }}
                 >
                   {sample}
@@ -145,7 +145,7 @@ function TokenBoard() {
                   className="w-6 rounded-[var(--radius-sm)] bg-[var(--color-bg-tertiary)]"
                   style={{ height: spacing[key as keyof typeof spacing] }}
                 />
-                <span className="font-mono text-[11px] text-[var(--color-text-tertiary)]">{key}</span>
+                <span className="text-[11px] text-[var(--color-text-tertiary)]">{key}</span>
               </div>
             ))}
           </div>
@@ -217,7 +217,7 @@ function Gallery() {
           <ProgressRing size={44} progress={45} color={colors.data.protein} aria-label="45% protein" />
           <ProgressRing size={44} progress={100} color={colors.data.volume} aria-label="100% volume" />
           <ProgressRing size={64} stroke={5} progress={60} color={colors.data.calories} aria-label="60% large">
-            <span className="font-mono text-[11px] font-semibold">60%</span>
+            <span className="text-[11px] font-semibold">60%</span>
           </ProgressRing>
         </Row>
 

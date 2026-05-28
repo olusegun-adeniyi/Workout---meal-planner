@@ -215,12 +215,10 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 ### Typography Tokens
 
 **Font families:**
-- Body / UI: `Google Sans Flex` — all labels, headings, copy, button text, nav
-- Numbers / Data: `Google Sans Mono` — all quantitative values: macros, weights, reps, durations, dates in tables
+- Body / UI: `Google Sans Flex` — all labels, headings, copy, button text, nav, numbers, and data
 
 **Fallback stack:**
 - Sans: `"Google Sans Flex", "Google Sans", "Google Sans Text", "Product Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
-- Mono: `"Google Sans Mono", "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", "Courier New", monospace`
 
 #### Type Scale
 
@@ -1589,7 +1587,6 @@ Define all tokens in `app/globals.css` inside a `@theme` block:
   --color-border-default: #ebebeb;
   --color-border-strong: rgba(10, 10, 10, 0.12);
   --font-sans: "Google Sans Flex", "Google Sans", "Google Sans Text", "Product Sans", system-ui, sans-serif;
-  --font-mono: "Google Sans Mono", "Roboto Mono", monospace;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
@@ -1651,7 +1648,7 @@ Every data-displaying screen must implement:
 | Use `#fafaf9` as the page background | Use pure white `#ffffff` as the page background |
 | Use 1px borders to define cards | Add drop shadows to cards |
 | Use `#000000` black for the single primary action on a screen | Use black for icons, section headers, decorative elements |
-| Use Google Sans Mono for every number that matters | Mix sans and mono arbitrarily |
+| Use Google Sans Flex for every number that matters | Mix multiple typefaces arbitrarily |
 | Keep border-radius consistent per component type | Use different radii on similar components within the same screen |
 | Leave generous vertical space between sections (24–32px) | Stack sections with < 16px between them |
 | Use ALL CAPS only for section header labels | Use ALL CAPS in body copy, headings, or buttons |

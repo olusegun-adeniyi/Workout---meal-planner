@@ -86,7 +86,6 @@ export const colors = {
 
 export const fontFamily = {
   sans: '"Google Sans Flex", "Google Sans", "Google Sans Text", "Product Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  mono: '"Google Sans Mono", "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", "Courier New", monospace',
 } as const
 
 // px values — Tailwind translates to rem; use these for inline/Recharts contexts
@@ -102,13 +101,6 @@ export const fontSize = {
   label: 11,
   button: 16,
   buttonSmall: 14,
-  // Google Sans Mono — numeric / quantitative values only
-  numHero: 40,
-  numLarge: 28,
-  numMedium: 20,
-  numBody: 15,
-  numSmall: 13,
-  numCaption: 11,
 } as const
 
 export const lineHeight = {

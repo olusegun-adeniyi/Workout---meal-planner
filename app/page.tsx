@@ -1,10 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent, HTMLAttributes, HTMLInputTypeAttribute } from 'react'
-import { ArrowLeft, CheckCircle2 } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/component-library'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
+import { Button, Spinner } from '@/components/component-library'
 
 type FormValues = {
   firstName: string
@@ -135,16 +135,13 @@ function validate(values: FormValues): FormErrors {
 }
 
 export default function OnboardingPage() {
+  const router = useRouter()
   const [values, setValues] = useState<FormValues>(initialValues)
   const [errors, setErrors] = useState<FormErrors>({})
   const [step, setStep] = useState<FormStep>('personal')
   const [serverError, setServerError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-
-  const fullName = useMemo(() => {
-    return [values.firstName.trim(), values.lastName.trim()].filter(Boolean).join(' ')
-  }, [values.firstName, values.lastName])
+  const [showWelcome, setShowWelcome] = useState(false)
 
   const currentFields = step === 'personal' ? personalFields : bodyFields
   const isCurrentStepFilled = currentFields.every((field) => values[field].trim().length > 0)
@@ -155,7 +152,6 @@ export default function OnboardingPage() {
     setValues((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
     setServerError(null)
-    setSubmitted(false)
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -217,7 +213,30 @@ export default function OnboardingPage() {
       profileId: result.profile.id,
       completedAt: new Date().toISOString(),
     }))
-    setSubmitted(true)
+    setShowWelcome(true)
+    window.setTimeout(() => {
+      router.push('/today')
+    }, 1800)
+  }
+
+  if (showWelcome) {
+    return (
+      <main className="min-h-screen bg-[#F6F5F3] bg-[url('/images/desktop-background.png')] bg-cover bg-center bg-no-repeat">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-surface-default)] px-6 sm:bg-[rgba(10,10,10,0.18)]">
+          <div className="flex min-h-screen w-full flex-col items-center justify-center text-center sm:min-h-0 sm:max-w-[360px] sm:rounded-[var(--radius-lg)] sm:border sm:border-[var(--color-border-default)] sm:bg-[var(--color-surface-default)] sm:px-8 sm:py-10 sm:shadow-[0_8px_24px_rgba(0,0,0,0.10)]">
+            <h1 className="text-[24px] font-semibold leading-[28px] text-black">
+              Welcome to Forge
+            </h1>
+            <p className="mt-2 text-[15px] leading-[22px] text-[var(--color-text-tertiary)]">
+              let's help you reach that goals
+            </p>
+            <div className="mt-8">
+              <Spinner size="md" color="#000000" />
+            </div>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -337,28 +356,6 @@ export default function OnboardingPage() {
               </Button>
             </form>
 
-            {submitted && (
-              <div
-                className="mt-4 flex items-start gap-3 rounded-[var(--radius-lg)] border border-[rgba(22,163,74,0.20)] bg-[var(--color-state-success-bg)] p-4"
-                role="status"
-              >
-                <CheckCircle2 className="mt-0.5 flex-shrink-0 text-[var(--color-state-success)]" size={20} />
-                <div>
-                  <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
-                    Profile started{fullName ? ` for ${fullName}` : ''}
-                  </p>
-                  <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
-                    Saved to Supabase. Next step is the Today screen.
-                  </p>
-                  <Link
-                    href="/today"
-                    className="mt-3 inline-flex text-[13px] font-semibold text-[var(--color-text-accent)]"
-                  >
-                    Open Today
-                  </Link>
-                </div>
-              </div>
-            )}
           </div>
         </section>
 

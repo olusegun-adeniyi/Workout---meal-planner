@@ -584,7 +584,7 @@ export function Stepper({ value, onChange, min = 0, max = 999, step = 1, label, 
     <div className="flex flex-col items-center gap-4">
       <div className="flex flex-col items-center gap-1">
         <span
-          className="font-mono text-[40px] font-bold leading-none text-[var(--color-text-primary)]"
+          className="text-[40px] font-bold leading-none text-[var(--color-text-primary)]"
           aria-live="polite"
           aria-atomic="true"
         >
@@ -767,7 +767,7 @@ export function Card({ children, variant = 'default', className, onClick }: Card
     default: 'p-4',
     list: 'overflow-hidden',
     tinted: 'p-4 bg-[var(--color-action-primary-subtle)] border-[var(--color-action-primary)]',
-    selected: 'p-4 bg-[var(--color-action-primary-subtle)] border-[var(--color-action-primary)]',
+    selected: 'p-4 bg-[var(--color-surface-default)] border-[3px] border-[var(--color-border-selected)]',
     elevated: 'p-4 bg-[var(--color-surface-raised)] shadow-[0_1px_3px_rgba(0,0,0,0.06)]',
   }
 
@@ -938,7 +938,7 @@ export function MetricCard({
         {state === 'empty' ? (
           <span className="text-[15px] text-[var(--color-text-secondary)]">Get started</span>
         ) : (
-          <span className="font-mono text-[28px] font-semibold leading-none text-[var(--color-text-primary)]">
+          <span className="text-[28px] font-semibold leading-none text-[var(--color-text-primary)]">
             {value}
           </span>
         )}
@@ -950,7 +950,7 @@ export function MetricCard({
       </div>
       {state === 'error' ? (
         <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center">
-          <span className="font-mono text-[20px] text-[var(--color-text-tertiary)]">—</span>
+          <span className="text-[20px] text-[var(--color-text-tertiary)]">—</span>
         </div>
       ) : (
         <ProgressRing
@@ -1024,7 +1024,7 @@ export function NextActionCard({
         <div>
           <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">{mealName} logged</p>
           {calories && (
-            <p className="font-mono text-[13px] text-[var(--color-text-secondary)]">
+            <p className="text-[13px] text-[var(--color-text-secondary)]">
               {calories} cal · {protein}g protein
             </p>
           )}
@@ -1063,7 +1063,7 @@ export function NextActionCard({
           {mealName}
         </h2>
         {(calories !== undefined || protein !== undefined) && (
-          <p className="font-mono text-[15px] text-[var(--color-text-secondary)]">
+          <p className="text-[15px] text-[var(--color-text-secondary)]">
             {calories} cal{protein !== undefined ? ` · ${protein}g protein` : ''}
           </p>
         )}
@@ -1130,7 +1130,7 @@ export function MealTimelineRow({
         )}
         style={{ minHeight: 68 }}
       >
-        <span className="w-11 flex-shrink-0 font-mono text-[11px] text-[var(--color-text-tertiary)]">
+        <span className="w-11 flex-shrink-0 text-[11px] text-[var(--color-text-tertiary)]">
           {time}
         </span>
         <div
@@ -1145,7 +1145,7 @@ export function MealTimelineRow({
             {mealName}
           </span>
           {(calories !== undefined || protein !== undefined) && (
-            <span className="font-mono text-[13px] text-[var(--color-text-secondary)]">
+            <span className="text-[13px] text-[var(--color-text-secondary)]">
               {calories} cal{protein !== undefined ? ` · ${protein}g protein` : ''}
             </span>
           )}
@@ -1213,10 +1213,10 @@ export function MacroRings({ calories, calorieTarget, protein, proteinTarget, cl
       </div>
 
       <div className="flex flex-1 flex-col gap-1">
-        <span className="font-mono text-[15px] font-medium text-[var(--color-text-primary)]">
+        <span className="text-[15px] font-medium text-[var(--color-text-primary)]">
           {calories.toLocaleString()} / {calorieTarget.toLocaleString()} cal
         </span>
-        <span className="font-mono text-[15px] font-medium text-[var(--color-text-primary)]">
+        <span className="text-[15px] font-medium text-[var(--color-text-primary)]">
           {protein}g / {proteinTarget}g protein
         </span>
       </div>
@@ -1244,7 +1244,7 @@ export function StreakCounter({ days, className }: StreakCounterProps) {
     <div className={cn('flex items-center gap-1', className)}>
       <span aria-hidden="true">🔥</span>
       <span
-        className="font-mono text-[20px] font-semibold"
+        className="text-[20px] font-semibold"
         style={{ color: colors.text.accent }}
         aria-live="polite"
         aria-atomic="true"
@@ -1313,7 +1313,7 @@ export function WorkoutCard({
           <span className="text-[15px] font-semibold text-[var(--color-text-primary)]">
             {muscleGroups}
           </span>
-          <span className="font-mono text-[13px] text-[var(--color-text-secondary)]">
+          <span className="text-[13px] text-[var(--color-text-secondary)]">
             {isCompleted
               ? `Completed · ${completedMinutes} min`
               : `${exerciseCount} exercises · est. ${estimatedMinutes} min`}
@@ -1335,7 +1335,7 @@ export function WorkoutCard({
           {exercises.map((ex, i) => (
             <div key={i} className="flex items-center justify-between py-3">
               <span className="text-[15px] font-semibold text-[var(--color-text-primary)]">{ex.name}</span>
-              <span className="font-mono text-[13px] text-[var(--color-text-secondary)]">{ex.target}</span>
+              <span className="text-[13px] text-[var(--color-text-secondary)]">{ex.target}</span>
             </div>
           ))}
           {!isCompleted && onComplete && (

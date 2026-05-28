@@ -190,6 +190,28 @@ function buildWeekPlan(profile?: ProfileInputs): PlanDay[] {
   }))
 }
 
+function PlanPanel({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <section className={`rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] p-5 ${className}`}>
+      {children}
+    </section>
+  )
+}
+
+function trainingFocusLabel(day: PlanDay) {
+  if (day.workout.split === 'Rest') return 'Rest'
+  if (day.workout.split === 'Legs') return 'Leg'
+  if (day.workout.split === 'Pull') return 'Biceps'
+  if (day.workout.split === 'Push') return 'Chest'
+  return day.workout.split
+}
+
 function todayId() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -266,8 +288,8 @@ function PlanContent() {
   }
 
   return (
-    <ScreenContainer>
-      <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-5 pb-8 pt-5">
+    <ScreenContainer className="lg:bg-[var(--color-surface-default)] lg:px-0">
+      <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-5 pb-8 pt-5 lg:hidden">
         <header className="flex items-end justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
@@ -327,12 +349,12 @@ function PlanContent() {
                     onClick={() => setSelectedDayId(day.id)}
                     className={`flex min-w-[62px] flex-col items-center rounded-[var(--radius-lg)] border px-3 py-2 transition-colors ${
                       active
-                        ? 'border-[var(--color-border-selected)] bg-[var(--color-action-primary-subtle)]'
+                        ? 'border-[3px] border-[var(--color-border-selected)] bg-[var(--color-surface-default)]'
                         : 'border-[var(--color-border-default)] bg-[var(--color-surface-default)]'
                     }`}
                   >
                     <span className="text-[12px] font-medium text-[var(--color-text-secondary)]">{day.label}</span>
-                    <span className="font-mono text-[20px] leading-[24px] text-[var(--color-text-primary)]">{day.date}</span>
+                    <span className="text-[20px] leading-[24px] text-[var(--color-text-primary)]">{day.date}</span>
                   </button>
                 )
               })}
@@ -359,7 +381,7 @@ function PlanContent() {
                           <p className="mt-1 truncate text-[17px] font-semibold leading-[22px] text-[var(--color-text-primary)]">
                             {meal.name}
                           </p>
-                          <p className="mt-1 font-mono text-[13px] text-[var(--color-text-secondary)]">
+                          <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
                             {meal.calories} cal · {meal.protein}g protein · {meal.cookTime} min
                           </p>
                         </div>
@@ -375,7 +397,7 @@ function PlanContent() {
                       </div>
                     ))}
                   </Card>
-                  <p className="px-1 font-mono text-[13px] text-[var(--color-text-secondary)]">
+                  <p className="px-1 text-[13px] text-[var(--color-text-secondary)]">
                     {selectedTotals.calories} cal · {selectedTotals.protein}g protein
                   </p>
                 </section>
@@ -386,23 +408,18 @@ function PlanContent() {
                     <div className="grid grid-cols-7 gap-2">
                       {plan.map((day) => {
                         const active = day.id === selectedDay.id
-                        const isRest = day.workout.split === 'Rest'
-
                         return (
                           <button
                             key={day.id}
                             type="button"
                             onClick={() => setSelectedDayId(day.id)}
-                            className={`flex min-h-[76px] flex-col items-center justify-between rounded-[var(--radius-md)] border px-1 py-2 ${
+                            className={`flex min-h-[44px] flex-col items-center justify-center rounded-[var(--radius-md)] border px-1 py-2 ${
                               active
-                                ? 'border-[var(--color-border-selected)] bg-[var(--color-action-primary-subtle)]'
+                                ? 'border-[3px] border-[var(--color-border-selected)] bg-[var(--color-surface-default)]'
                                 : 'border-[var(--color-border-default)] bg-[var(--color-surface-default)]'
                             }`}
                           >
                             <span className="text-[11px] font-medium text-[var(--color-text-tertiary)]">{day.label}</span>
-                            <span className={`text-[12px] font-semibold ${isRest ? 'text-[var(--color-text-tertiary)]' : 'text-[var(--color-text-primary)]'}`}>
-                              {day.workout.split}
-                            </span>
                           </button>
                         )
                       })}
@@ -411,7 +428,7 @@ function PlanContent() {
                       <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
                         {selectedDay.workout.name}
                       </p>
-                      <p className="mt-1 font-mono text-[13px] text-[var(--color-text-secondary)]">
+                      <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
                         {selectedDay.workout.duration > 0 ? `est. ${selectedDay.workout.duration} min` : 'recovery day'}
                       </p>
                     </div>
@@ -434,12 +451,217 @@ function PlanContent() {
         )}
       </div>
 
+      <div className="hidden min-h-screen w-full bg-[var(--color-surface-default)] px-5 pb-28 pt-5 text-[var(--color-text-primary)] lg:block">
+        <header className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action-primary)] text-[20px] font-bold text-[var(--color-text-inverse)]">
+              F
+            </div>
+            <span className="rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] px-4 py-2 text-[13px] font-medium text-[var(--color-text-secondary)]">
+              Weekly review
+            </span>
+            {locked && (
+              <span className="rounded-[var(--radius-full)] bg-[var(--color-action-primary-subtle)] px-4 py-2 text-[13px] font-medium text-[var(--color-text-primary)]">
+                Locked
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={generatePlan}
+              className="rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-action-secondary)] px-5 py-2 text-[14px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+            >
+              Regenerate
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLocked((current) => !current)
+                toast({ message: locked ? 'Plan unlocked' : 'Plan locked in', type: 'success' })
+              }}
+              className="rounded-[var(--radius-full)] bg-[var(--color-action-primary)] px-5 py-2 text-[14px] font-medium text-[var(--color-text-inverse)] transition-opacity hover:opacity-90"
+            >
+              {locked ? 'Unlock plan' : 'Lock plan'}
+            </button>
+          </div>
+        </header>
+
+        {generating && (
+          <PlanPanel className="mb-5 bg-[var(--color-action-primary-subtle)]">
+            <p className="text-[17px] font-medium text-[var(--color-text-primary)]">
+              Generating your week...
+            </p>
+            <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
+              Building meals around daily slots, high protein, and Nigerian + British preferences.
+            </p>
+          </PlanPanel>
+        )}
+
+        {!plan ? (
+          <PlanPanel>
+            <EmptyState
+              icon={<CalendarDays size={iconSize.hero} color={colors.text.tertiary} />}
+              title="No plan for this week."
+              body="Generate this week's plan to review meals and workouts before locking it in."
+              action={<Button onClick={generatePlan} loading={generating}>Generate plan</Button>}
+            />
+          </PlanPanel>
+        ) : selectedDay ? (
+          <main className="grid grid-cols-12 gap-5">
+            <PlanPanel className="col-span-12">
+              <div className="flex items-start justify-between gap-6">
+                <div>
+                  <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">This week</p>
+                  <h1 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
+                    Plan meals and training
+                  </h1>
+                </div>
+                <div className="text-right">
+                  <p className="text-[13px] text-[var(--color-text-secondary)]">Selected day</p>
+                  <p className="mt-1 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
+                    {selectedDay.label} {selectedDay.date}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 grid grid-cols-7 gap-3">
+                {plan.map((day) => {
+                  const active = day.id === selectedDay.id
+                  return (
+                    <button
+                      key={day.id}
+                      type="button"
+                      onClick={() => setSelectedDayId(day.id)}
+                      className={`min-h-[92px] rounded-[var(--radius-lg)] border p-4 text-left transition-colors ${
+                        active
+                          ? 'border-[3px] border-[var(--color-border-selected)] bg-[var(--color-surface-default)]'
+                          : 'border-[var(--color-border-default)] bg-[var(--color-surface-default)] hover:bg-[var(--color-bg-secondary)]'
+                      }`}
+                    >
+                      <span className="text-[13px] font-medium text-[var(--color-text-secondary)]">{day.label}</span>
+                      <span className="mt-1 block text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">{day.date}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </PlanPanel>
+
+            <PlanPanel className="col-span-7 min-h-[520px]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
+                    {selectedDay.label} {selectedDay.date}
+                  </p>
+                  <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">Meals</h2>
+                </div>
+                <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-3 py-1 text-[13px] font-medium text-[var(--color-text-secondary)]">
+                  {selectedTotals.calories} cal · {selectedTotals.protein}g protein
+                </span>
+              </div>
+              <div className="mt-6 grid gap-3">
+                {selectedDay.meals.map((meal) => (
+                  <div
+                    key={meal.id}
+                    className="grid grid-cols-[72px_1fr_auto] items-center gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] p-4"
+                  >
+                    <div>
+                      <p className="text-[14px] text-[var(--color-text-tertiary)]">{meal.time}</p>
+                      <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">{meal.slot}</p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-[17px] font-medium text-[var(--color-text-primary)]">{meal.name}</p>
+                      <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
+                        {meal.calories} cal · {meal.protein}g protein · {meal.cookTime} min
+                      </p>
+                    </div>
+                    {!locked && (
+                      <button
+                        type="button"
+                        onClick={() => setSwappingMeal(meal)}
+                        className="rounded-[var(--radius-full)] border border-[var(--color-border-default)] px-4 py-2 text-[13px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+                      >
+                        Swap
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </PlanPanel>
+
+            <div className="col-span-5 grid self-start gap-5">
+              <PlanPanel>
+                <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">Training</p>
+                <h2 className="mt-5 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">{selectedDay.workout.name}</h2>
+                <p className="mt-2 text-[15px] leading-[22px] text-[var(--color-text-secondary)]">
+                  {selectedDay.workout.duration > 0 ? `Estimated ${selectedDay.workout.duration} min` : 'Recovery day'}
+                </p>
+                <div className="mt-6 grid grid-cols-7 gap-2">
+                  {plan.map((day) => {
+                    const active = day.id === selectedDay.id
+                    return (
+                      <button
+                        key={day.id}
+                        type="button"
+                        onClick={() => setSelectedDayId(day.id)}
+                        className={`min-h-[60px] rounded-[var(--radius-md)] border p-2 text-center transition-colors ${
+                          active
+                            ? 'border-[3px] border-[var(--color-border-selected)] bg-[var(--color-surface-default)]'
+                            : 'border-[var(--color-border-default)] hover:bg-[var(--color-bg-secondary)]'
+                        }`}
+                      >
+                        <span className="block text-[11px] font-medium text-[var(--color-text-tertiary)]">{day.label}</span>
+                        <span className="mt-2 block truncate text-[12px] font-medium text-[var(--color-text-primary)]">{trainingFocusLabel(day)}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </PlanPanel>
+
+              <PlanPanel>
+                <p className="text-[13px] font-medium uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">Review</p>
+                <h2 className="mt-5 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
+                  {locked ? 'Plan locked' : 'Ready to lock'}
+                </h2>
+                <p className="mt-2 text-[15px] leading-[22px] text-[var(--color-text-secondary)]">
+                  {locked
+                    ? 'Meals are protected for the week. Unlock to make swaps.'
+                    : 'Review meals and training, then lock the week when it feels right.'}
+                </p>
+              </PlanPanel>
+            </div>
+          </main>
+        ) : null}
+
+        <nav
+          aria-label="Primary"
+          className="fixed bottom-6 left-1/2 z-30 flex h-14 -translate-x-1/2 items-center gap-1 rounded-[var(--radius-full)] bg-[var(--color-action-primary)] p-1 text-[15px] font-medium shadow-[0_8px_32px_rgba(0,0,0,0.12)]"
+        >
+          <button
+            type="button"
+            onClick={() => router.push('/today')}
+            className="flex h-12 items-center justify-center rounded-[var(--radius-full)] px-7 text-[var(--color-text-inverse)] transition-colors hover:bg-white/10"
+          >
+            Today
+          </button>
+          <span className="flex h-12 items-center justify-center rounded-[var(--radius-full)] bg-[var(--color-surface-default)] px-7 text-[var(--color-text-primary)]">
+            Plan
+          </span>
+          <button
+            type="button"
+            onClick={() => toast({ message: 'Progress is next', type: 'neutral' })}
+            className="flex h-12 items-center justify-center rounded-[var(--radius-full)] px-7 text-[var(--color-text-inverse)] transition-colors hover:bg-white/10"
+          >
+            Progress
+          </button>
+        </nav>
+      </div>
+
       <BottomSheet open={!!swappingMeal} onClose={() => setSwappingMeal(null)} title="Swap meal">
         <div className="flex flex-col gap-3 pb-4">
           {swapOptions.map((meal) => (
             <Card key={meal.name} className="p-4" onClick={() => swapMeal(meal)}>
               <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">{meal.name}</p>
-              <p className="mt-1 font-mono text-[13px] text-[var(--color-text-secondary)]">
+              <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
                 {meal.calories} cal · {meal.protein}g protein · {meal.cookTime} min
               </p>
               <p className="mt-1 text-[13px] text-[var(--color-text-tertiary)]">{meal.cuisine}</p>
@@ -448,7 +670,9 @@ function PlanContent() {
         </div>
       </BottomSheet>
 
-      <BottomNav active="plan" onChange={handleNav} />
+      <div className="lg:hidden">
+        <BottomNav active="plan" onChange={handleNav} />
+      </div>
     </ScreenContainer>
   )
 }

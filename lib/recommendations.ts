@@ -40,9 +40,9 @@ export type DailyRecommendation = {
 }
 
 export const recommendedMealTimes: Record<MealSlotId, string> = {
-  breakfast: '08:00',
-  brunch: '11:00',
-  lunch: '13:30',
+  breakfast: '09:00',
+  brunch: '11:30',
+  lunch: '14:00',
   dinner: '18:30',
 }
 
@@ -51,7 +51,7 @@ const mealTemplate: Record<MealSlotId, Omit<RecommendedMeal, 'calories' | 'prote
     id: 'breakfast',
     slot: 'Breakfast',
     time: recommendedMealTimes.breakfast,
-    reminderTime: '07:45',
+    reminderTime: '09:00',
     name: 'Whey porridge with banana and peanut butter',
     description: 'Early high-protein breakfast to start the eating window.',
     cookTime: 10,
@@ -61,7 +61,7 @@ const mealTemplate: Record<MealSlotId, Omit<RecommendedMeal, 'calories' | 'prote
     id: 'brunch',
     slot: 'Brunch',
     time: recommendedMealTimes.brunch,
-    reminderTime: '10:45',
+    reminderTime: '11:30',
     name: 'Greek yoghurt, granola and cashews',
     description: 'Small calorie-dense meal to keep the surplus on track.',
     cookTime: 5,
@@ -71,7 +71,7 @@ const mealTemplate: Record<MealSlotId, Omit<RecommendedMeal, 'calories' | 'prote
     id: 'lunch',
     slot: 'Lunch',
     time: recommendedMealTimes.lunch,
-    reminderTime: '13:15',
+    reminderTime: '14:00',
     name: 'Jollof rice, grilled chicken and mixed veg',
     description: 'Largest meal while digestion and training energy are still well supported.',
     cookTime: 35,
@@ -81,7 +81,7 @@ const mealTemplate: Record<MealSlotId, Omit<RecommendedMeal, 'calories' | 'prote
     id: 'dinner',
     slot: 'Dinner',
     time: recommendedMealTimes.dinner,
-    reminderTime: '18:15',
+    reminderTime: '18:30',
     name: 'Beef stew, rice and plantain',
     description: 'Earlier evening meal to avoid pushing most calories close to sleep.',
     cookTime: 45,
@@ -203,7 +203,11 @@ function getMealStatus(time: string, now = new Date()): MealStatus {
 
 export function getDailyRecommendation(profile?: ProfileInputs, now = new Date()): DailyRecommendation {
   const { calorieTarget, proteinTarget } = getTargets(profile)
-  const weekday = now.toLocaleDateString('en-GB', { weekday: 'long' })
+  const dateLabel = now.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
 
   const meals = (Object.keys(mealTemplate) as MealSlotId[]).map((slot) => ({
     ...mealTemplate[slot],
@@ -213,7 +217,7 @@ export function getDailyRecommendation(profile?: ProfileInputs, now = new Date()
   }))
 
   return {
-    dateLabel: weekday,
+    dateLabel,
     calorieTarget,
     proteinTarget,
     meals,
