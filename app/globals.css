@@ -21,7 +21,7 @@
   --color-surface-overlay:  rgba(10, 10, 10, 0.50);
 
   /* Text */
-  --color-text-primary:   #0a0a0a;
+  --color-text-primary:   #8D8B94;
   --color-text-secondary: #5c5c5a;
   --color-text-tertiary:  #9a9a98;
   --color-text-disabled:  #c4c4c2;
@@ -31,7 +31,7 @@
   --color-text-success:   #16a34a;
 
   /* Border */
-  --color-border-default:  rgba(10, 10, 10, 0.06);
+  --color-border-default:  #ebebeb;
   --color-border-strong:   rgba(10, 10, 10, 0.12);
   --color-border-focus:    #000000;
   --color-border-error:    #dc2626;
@@ -85,4 +85,26 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface-default) inset;
+  -webkit-text-fill-color: #000000;
+  caret-color: #000000;
+  transition: background-color 9999s ease-out;
 }

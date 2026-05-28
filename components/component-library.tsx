@@ -335,8 +335,8 @@ export function Button({
     <button
       disabled={disabled || loading}
       className={cn(
-        'relative flex w-full items-center justify-center font-semibold transition-all',
-        isMd ? 'h-[52px] rounded-[var(--radius-pill)] px-6 text-[16px]' : 'h-9 rounded-[var(--radius-pill)] px-4 text-[14px]',
+        'relative flex w-full items-center justify-center font-normal transition-all',
+        isMd ? 'h-[52px] rounded-[var(--radius-pill)] px-6 text-[15px]' : 'h-9 rounded-[var(--radius-pill)] px-4 text-[15px]',
         BUTTON_VARIANTS[variant],
         className,
       )}
@@ -461,7 +461,7 @@ export function TextInput({ label, error, helperText, id, className, ...props }:
         aria-describedby={error ? errorId : undefined}
         aria-invalid={!!error}
         className={cn(
-          'h-[52px] w-full rounded-[var(--radius-md)] border bg-[var(--color-surface-default)] px-4 text-[15px] text-[var(--color-text-primary)] outline-none transition-all placeholder:text-[var(--color-text-tertiary)]',
+          'h-11 w-full rounded-[var(--radius-md)] border bg-[var(--color-surface-default)] px-2 text-[15px] text-black outline-none transition-all placeholder:text-[var(--color-text-tertiary)]',
           error
             ? 'border-[var(--color-state-error)] focus:ring-1 focus:ring-[var(--color-state-error)]'
             : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-1 focus:ring-[var(--color-action-primary)]',
@@ -499,7 +499,7 @@ export function SearchInput({ value, onClear, className, ...props }: SearchInput
       <input
         type="search"
         value={value}
-        className="h-[52px] w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] pl-11 pr-10 text-[15px] text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-1 focus:ring-[var(--color-action-primary)]"
+        className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] pl-11 pr-10 text-[15px] text-black outline-none placeholder:text-[var(--color-text-tertiary)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-1 focus:ring-[var(--color-action-primary)]"
         {...props}
       />
       {value && onClear && (
@@ -540,7 +540,7 @@ export function TextareaField({ label, error, maxLength, id, value, className, .
           maxLength={maxLength}
           aria-invalid={!!error}
           className={cn(
-            'w-full min-h-[96px] max-h-[200px] resize-none rounded-[var(--radius-md)] border bg-[var(--color-surface-default)] px-4 py-3 text-[15px] text-[var(--color-text-primary)] outline-none transition-all placeholder:text-[var(--color-text-tertiary)]',
+            'w-full min-h-[96px] max-h-[200px] resize-none rounded-[var(--radius-md)] border bg-[var(--color-surface-default)] px-4 py-3 text-[15px] text-black outline-none transition-all placeholder:text-[var(--color-text-tertiary)]',
             error
               ? 'border-[var(--color-state-error)] focus:ring-1 focus:ring-[var(--color-state-error)]'
               : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-1 focus:ring-[var(--color-action-primary)]',

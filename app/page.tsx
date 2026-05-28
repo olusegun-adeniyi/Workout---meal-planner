@@ -1,9 +1,10 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import type { FormEvent, HTMLAttributes, HTMLInputTypeAttribute } from 'react'
 import { CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
-import { Button, Card, TextInput } from '@/components/component-library'
+import { Button } from '@/components/component-library'
 
 type FormValues = {
   firstName: string
@@ -25,6 +26,66 @@ const initialValues: FormValues = {
   heightCm: '',
   currentWeightKg: '',
   targetWeightKg: '',
+}
+
+const fieldLabels: Record<keyof FormValues, string> = {
+  firstName: 'First name',
+  lastName: 'Last name',
+  email: 'Email',
+  phone: 'Phone number',
+  heightCm: 'Height',
+  currentWeightKg: 'Current weight',
+  targetWeightKg: 'Target weight',
+}
+
+function OnboardingField({
+  field,
+  value,
+  error,
+  type = 'text',
+  inputMode,
+  autoComplete,
+  placeholder,
+  onChange,
+}: {
+  field: keyof FormValues
+  value: string
+  error?: string
+  type?: HTMLInputTypeAttribute
+  inputMode?: HTMLAttributes<HTMLInputElement>['inputMode']
+  autoComplete?: string
+  placeholder?: string
+  onChange: (value: string) => void
+}) {
+  const id = `onboarding-${field}`
+  const isNumeric = type === 'number'
+
+  return (
+    <div>
+      <label className="sr-only" htmlFor={id}>
+        {fieldLabels[field]}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type={isNumeric ? 'text' : type}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          value={value}
+          placeholder={placeholder ?? fieldLabels[field]}
+          aria-invalid={!!error}
+          aria-describedby={error ? `${id}-error` : undefined}
+          onChange={(event) => onChange(event.target.value)}
+          className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] px-3 text-[15px] text-black outline-none transition-all placeholder:text-[var(--color-text-tertiary)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-action-primary)] focus:ring-1 focus:ring-[var(--color-action-primary)]"
+        />
+      </div>
+      {error && (
+        <p id={`${id}-error`} className="mt-1 px-4 text-[12px] text-[var(--color-state-error)]">
+          {error}
+        </p>
+      )}
+    </div>
+  )
 }
 
 function validate(values: FormValues): FormErrors {
@@ -73,6 +134,8 @@ export default function OnboardingPage() {
     return [values.firstName.trim(), values.lastName.trim()].filter(Boolean).join(' ')
   }, [values.firstName, values.lastName])
 
+  const isFormFilled = Object.values(values).every((value) => value.trim().length > 0)
+
   function updateField(field: keyof FormValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
@@ -80,7 +143,7 @@ export default function OnboardingPage() {
     setSubmitted(false)
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nextErrors = validate(values)
     setErrors(nextErrors)
@@ -132,87 +195,90 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg-primary)] px-4 py-8">
-      <div className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-[430px] flex-col justify-center">
-        <div className="mb-6">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
-            Forge setup
-          </p>
-          <h1 className="text-[32px] font-bold leading-[36px] text-[var(--color-text-primary)]">
-            Tell Forge who to chase.
-          </h1>
-          <p className="mt-3 text-[15px] leading-[22px] text-[var(--color-text-secondary)]">
-            Contact details and body targets for meal planning, reminders, and workout recommendations.
-          </p>
-        </div>
+    <main className="min-h-screen bg-[#F6F5F3] bg-[url('/images/desktop-background.png')] bg-cover bg-center bg-no-repeat">
+      <div className="flex min-h-screen flex-col items-center px-6">
+        <section className="flex w-full max-w-[400px] flex-1 flex-col justify-center pb-[12vh] pt-[10vh]">
+          <img
+            src="/icons/forge-icon.svg"
+            alt=""
+            className="mx-auto mb-8 h-8 w-8"
+          />
 
-        <Card className="p-4">
-          <form className="flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
+          <div className="mb-8 text-center">
+            <h1 className="text-[24px] font-semibold leading-[28px] text-black">
+              Tell Forge who to chase
+            </h1>
+            <p className="mt-2 text-[15px] font-normal leading-[22px] text-[var(--color-text-tertiary)]">
+              Set up your meal and training profile
+            </p>
+          </div>
+
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextInput
-                label="First name"
+              <OnboardingField
+                field="firstName"
                 autoComplete="given-name"
                 value={values.firstName}
                 error={errors.firstName}
-                onChange={(event) => updateField('firstName', event.target.value)}
+                onChange={(value) => updateField('firstName', value)}
               />
-              <TextInput
-                label="Last name"
+              <OnboardingField
+                field="lastName"
                 autoComplete="family-name"
                 value={values.lastName}
                 error={errors.lastName}
-                onChange={(event) => updateField('lastName', event.target.value)}
+                onChange={(value) => updateField('lastName', value)}
               />
             </div>
 
-            <TextInput
-              label="Email"
+            <OnboardingField
+              field="email"
               type="email"
               inputMode="email"
               autoComplete="email"
               value={values.email}
               error={errors.email}
-              onChange={(event) => updateField('email', event.target.value)}
+              onChange={(value) => updateField('email', value)}
             />
 
-            <TextInput
-              label="Phone number"
+            <OnboardingField
+              field="phone"
               type="tel"
               inputMode="tel"
               autoComplete="tel"
+              placeholder="Phone number"
               value={values.phone}
               error={errors.phone}
-              helperText="Use international format if possible"
-              onChange={(event) => updateField('phone', event.target.value)}
+              onChange={(value) => updateField('phone', value)}
             />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <TextInput
-                label="Height"
+              <OnboardingField
+                field="heightCm"
                 type="number"
                 inputMode="decimal"
+                placeholder="Height cm"
                 value={values.heightCm}
                 error={errors.heightCm}
-                helperText="cm"
-                onChange={(event) => updateField('heightCm', event.target.value)}
+                onChange={(value) => updateField('heightCm', value)}
               />
-              <TextInput
-                label="Current weight"
+              <OnboardingField
+                field="currentWeightKg"
                 type="number"
                 inputMode="decimal"
+                placeholder="Weight kg"
                 value={values.currentWeightKg}
                 error={errors.currentWeightKg}
-                helperText="kg"
-                onChange={(event) => updateField('currentWeightKg', event.target.value)}
+                onChange={(value) => updateField('currentWeightKg', value)}
               />
-              <TextInput
-                label="Target weight"
+              <OnboardingField
+                field="targetWeightKg"
                 type="number"
                 inputMode="decimal"
+                placeholder="Target kg"
                 value={values.targetWeightKg}
                 error={errors.targetWeightKg}
-                helperText="kg"
-                onChange={(event) => updateField('targetWeightKg', event.target.value)}
+                onChange={(value) => updateField('targetWeightKg', value)}
               />
             </div>
 
@@ -222,34 +288,38 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            <Button type="submit" loading={saving}>
+            <Button type="submit" loading={saving} disabled={!isFormFilled || saving} className="mt-3">
               Continue
             </Button>
           </form>
-        </Card>
 
-        {submitted && (
-          <div
-            className="mt-4 flex items-start gap-3 rounded-[var(--radius-lg)] border border-[rgba(22,163,74,0.20)] bg-[var(--color-state-success-bg)] p-4"
-            role="status"
-          >
-            <CheckCircle2 className="mt-0.5 flex-shrink-0 text-[var(--color-state-success)]" size={20} />
-            <div>
-              <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
-                Profile started{fullName ? ` for ${fullName}` : ''}
-              </p>
-              <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
-                Saved to Supabase. Next step is the Today screen.
-              </p>
-              <Link
-                href="/today"
-                className="mt-3 inline-flex text-[13px] font-semibold text-[var(--color-text-accent)]"
-              >
-                Open Today
-              </Link>
+          {submitted && (
+            <div
+              className="mt-4 flex items-start gap-3 rounded-[var(--radius-lg)] border border-[rgba(22,163,74,0.20)] bg-[var(--color-state-success-bg)] p-4"
+              role="status"
+            >
+              <CheckCircle2 className="mt-0.5 flex-shrink-0 text-[var(--color-state-success)]" size={20} />
+              <div>
+                <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
+                  Profile started{fullName ? ` for ${fullName}` : ''}
+                </p>
+                <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
+                  Saved to Supabase. Next step is the Today screen.
+                </p>
+                <Link
+                  href="/today"
+                  className="mt-3 inline-flex text-[13px] font-semibold text-[var(--color-text-accent)]"
+                >
+                  Open Today
+                </Link>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </section>
+
+        <footer className="pb-6 text-center text-[13px] text-[var(--color-text-tertiary)]">
+          Language: English (US)
+        </footer>
       </div>
     </main>
   )

@@ -105,7 +105,7 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 ### 8. Borders, Not Shadows
 **Cards are defined by 1px borders. The surface is flat.**
 - Implementation rules:
-  - Card border: `1px solid rgba(10,10,10,0.06)`
+  - Card border: `1px solid #ebebeb`
   - Hover state lifts border opacity to `rgba(10,10,10,0.12)`
   - Modals and bottom sheets have a single, slightly stronger border: `1px solid rgba(10,10,10,0.10)`
   - The only permitted shadows are: modal overlay scrim, floating action button (very subtle `0 2px 8px rgba(0,0,0,0.08)`)
@@ -157,7 +157,7 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 
 | Token | Value | Usage | Avoid |
 |---|---|---|---|
-| `color.text.primary` | `#0a0a0a` | All primary labels, headings, body copy | Secondary metadata |
+| `color.text.primary` | `#8D8B94` | All primary labels, headings, body copy | Secondary metadata |
 | `color.text.secondary` | `#5c5c5a` | Subheadings, meta labels, secondary descriptions | Primary headings |
 | `color.text.tertiary` | `#9a9a98` | Timestamps, placeholder text, dimmed values | Body copy |
 | `color.text.disabled` | `#c4c4c2` | Disabled form labels, inactive nav items | Active states |
@@ -170,7 +170,7 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 
 | Token | Value | Usage | Avoid |
 |---|---|---|---|
-| `color.border.default` | `rgba(10,10,10,0.06)` | Default card borders, list dividers, input borders | Focus states |
+| `color.border.default` | `#ebebeb` | Default card borders, list dividers, input borders | Focus states |
 | `color.border.strong` | `rgba(10,10,10,0.12)` | Hovered card borders, active input borders | Default resting state |
 | `color.border.focus` | `#000000` | Focused input ring, selected item outline | General borders |
 | `color.border.error` | `#dc2626` | Invalid input borders | Non-error contexts |
@@ -310,7 +310,7 @@ Forge uses flat design. Shadows are minimal and purposeful.
 
 | Token | Value | Usage |
 |---|---|---|
-| `border.default` | `1px solid rgba(10,10,10,0.06)` | Cards, input resting state, list containers |
+| `border.default` | `1px solid #ebebeb` | Cards, input resting state, list containers |
 | `border.strong` | `1px solid rgba(10,10,10,0.12)` | Hover state on cards, active input |
 | `border.focus` | `1px solid #000000` | Focused input field ring |
 | `border.error` | `1px solid #dc2626` | Invalid input field |
@@ -1521,7 +1521,7 @@ Screen headers follow a consistent pattern:
 - Never rely on colour alone to convey state — always pair with an icon or text label (e.g., "Eaten" text, not just a green dot)
 
 **Checked contrasts:**
-- `color.text.primary` (#0a0a0a) on `color.bg.primary` (#fafaf9): ~18:1 ✓
+- `color.text.primary` (#8D8B94) on `color.bg.primary` (#fafaf9): ~3.22:1
 - `color.text.secondary` (#5c5c5a) on `color.bg.primary`: ~6.5:1 ✓
 - `color.text.accent` (#000000) on `color.surface.default` (#ffffff): ~6.45:1 ✓
 - White text on `color.action.primary` (#000000): ~6.45:1 ✓
@@ -1578,7 +1578,7 @@ Define all tokens in `app/globals.css` inside a `@theme` block:
   --color-bg-primary: #fafaf9;
   --color-bg-secondary: #f2f2f0;
   --color-surface-default: #ffffff;
-  --color-text-primary: #0a0a0a;
+  --color-text-primary: #8D8B94;
   --color-text-secondary: #5c5c5a;
   --color-text-tertiary: #9a9a98;
   --color-text-accent: #000000;
@@ -1586,7 +1586,7 @@ Define all tokens in `app/globals.css` inside a `@theme` block:
   --color-action-primary-hover: #1a1a1a;
   --color-data-calories: #000000;
   --color-data-protein: #2563eb;
-  --color-border-default: rgba(10, 10, 10, 0.06);
+  --color-border-default: #ebebeb;
   --color-border-strong: rgba(10, 10, 10, 0.12);
   --font-sans: "Google Sans Flex", "Google Sans", "Google Sans Text", "Product Sans", system-ui, sans-serif;
   --font-mono: "Google Sans Mono", "Roboto Mono", monospace;

@@ -31,7 +31,7 @@ export const colors = {
   },
 
   text: {
-    primary: '#0a0a0a',   // All headings and body copy
+    primary: '#8D8B94',   // All headings and body copy
     secondary: '#5c5c5a', // Labels, meta, descriptions
     tertiary: '#9a9a98',  // Timestamps, placeholders, dimmed values
     disabled: '#c4c4c2',  // Disabled controls, inactive nav items
@@ -42,7 +42,7 @@ export const colors = {
   },
 
   border: {
-    default: 'rgba(10, 10, 10, 0.06)',  // Cards, inputs at rest
+    default: '#ebebeb',                 // Cards, inputs at rest
     strong: 'rgba(10, 10, 10, 0.12)',   // Hovered cards, active inputs
     focus: '#000000',                   // Focused input ring (1px)
     error: '#dc2626',                   // Invalid input border
