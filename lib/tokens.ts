@@ -31,7 +31,7 @@ export const colors = {
   },
 
   text: {
-    primary: '#8D8B94',   // All headings and body copy
+    primary: '#000000',   // All headings and body copy
     secondary: '#5c5c5a', // Labels, meta, descriptions
     tertiary: '#9a9a98',  // Timestamps, placeholders, dimmed values
     disabled: '#c4c4c2',  // Disabled controls, inactive nav items

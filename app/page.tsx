@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { FormEvent, HTMLAttributes, HTMLInputTypeAttribute } from 'react'
-import { CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/component-library'
 
@@ -17,6 +17,7 @@ type FormValues = {
 }
 
 type FormErrors = Partial<Record<keyof FormValues, string>>
+type FormStep = 'personal' | 'body'
 
 const initialValues: FormValues = {
   firstName: '',
@@ -36,6 +37,16 @@ const fieldLabels: Record<keyof FormValues, string> = {
   heightCm: 'Height',
   currentWeightKg: 'Current weight',
   targetWeightKg: 'Target weight',
+}
+
+const personalFields: (keyof FormValues)[] = ['firstName', 'lastName', 'email', 'phone']
+const bodyFields: (keyof FormValues)[] = ['heightCm', 'currentWeightKg', 'targetWeightKg']
+
+function pickErrors(errors: FormErrors, fields: (keyof FormValues)[]): FormErrors {
+  return fields.reduce<FormErrors>((nextErrors, field) => {
+    if (errors[field]) nextErrors[field] = errors[field]
+    return nextErrors
+  }, {})
 }
 
 function OnboardingField({
@@ -126,6 +137,7 @@ function validate(values: FormValues): FormErrors {
 export default function OnboardingPage() {
   const [values, setValues] = useState<FormValues>(initialValues)
   const [errors, setErrors] = useState<FormErrors>({})
+  const [step, setStep] = useState<FormStep>('personal')
   const [serverError, setServerError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -134,7 +146,10 @@ export default function OnboardingPage() {
     return [values.firstName.trim(), values.lastName.trim()].filter(Boolean).join(' ')
   }, [values.firstName, values.lastName])
 
-  const isFormFilled = Object.values(values).every((value) => value.trim().length > 0)
+  const currentFields = step === 'personal' ? personalFields : bodyFields
+  const isCurrentStepFilled = currentFields.every((field) => values[field].trim().length > 0)
+  const stepTitle = step === 'personal' ? 'Personal details' : 'Body details'
+  const stepLabel = step === 'personal' ? '1 of 2' : '2 of 2'
 
   function updateField(field: keyof FormValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
@@ -145,10 +160,21 @@ export default function OnboardingPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const nextErrors = validate(values)
-    setErrors(nextErrors)
     setServerError(null)
 
+    const nextErrors = validate(values)
+
+    if (step === 'personal') {
+      const personalErrors = pickErrors(nextErrors, personalFields)
+      setErrors(personalErrors)
+      if (Object.keys(personalErrors).length > 0) return
+
+      setErrors({})
+      setStep('body')
+      return
+    }
+
+    setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
 
     setSaving(true)
@@ -197,124 +223,142 @@ export default function OnboardingPage() {
   return (
     <main className="min-h-screen bg-[#F6F5F3] bg-[url('/images/desktop-background.png')] bg-cover bg-center bg-no-repeat">
       <div className="flex min-h-screen flex-col items-center px-6">
-        <section className="flex w-full max-w-[400px] flex-1 flex-col justify-center pb-[12vh] pt-[10vh]">
-          <img
-            src="/icons/forge-icon.svg"
-            alt=""
-            className="mx-auto mb-8 h-8 w-8"
-          />
-
-          <div className="mb-8 text-center">
-            <h1 className="text-[24px] font-semibold leading-[28px] text-black">
-              Tell Forge who to chase
-            </h1>
-            <p className="mt-2 text-[15px] font-normal leading-[22px] text-[var(--color-text-tertiary)]">
-              Set up your meal and training profile
-            </p>
-          </div>
-
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <OnboardingField
-                field="firstName"
-                autoComplete="given-name"
-                value={values.firstName}
-                error={errors.firstName}
-                onChange={(value) => updateField('firstName', value)}
-              />
-              <OnboardingField
-                field="lastName"
-                autoComplete="family-name"
-                value={values.lastName}
-                error={errors.lastName}
-                onChange={(value) => updateField('lastName', value)}
-              />
+        <section className="flex w-full flex-1 items-center justify-center py-10">
+          <div className="flex w-full max-w-[400px] flex-col">
+            <div className="mb-8 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {step === 'body' && (
+                  <button
+                    type="button"
+                    aria-label="Back to personal details"
+                    className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-md)] text-black transition-colors hover:bg-[var(--color-bg-secondary)]"
+                    onClick={() => {
+                      setErrors({})
+                      setServerError(null)
+                      setStep('personal')
+                    }}
+                  >
+                    <ArrowLeft size={16} strokeWidth={2} />
+                  </button>
+                )}
+                <h1 className="text-[17px] font-semibold leading-[22px] text-black">
+                  {stepTitle}
+                </h1>
+              </div>
+              <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-3 py-2 text-[13px] leading-none text-black">
+                {stepLabel}
+              </span>
             </div>
 
-            <OnboardingField
-              field="email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              value={values.email}
-              error={errors.email}
-              onChange={(value) => updateField('email', value)}
-            />
+            <form className="flex flex-col" onSubmit={handleSubmit} noValidate>
+              <div className="flex flex-col gap-4">
+                {step === 'personal' ? (
+                  <>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <OnboardingField
+                        field="firstName"
+                        autoComplete="given-name"
+                        value={values.firstName}
+                        error={errors.firstName}
+                        onChange={(value) => updateField('firstName', value)}
+                      />
+                      <OnboardingField
+                        field="lastName"
+                        autoComplete="family-name"
+                        value={values.lastName}
+                        error={errors.lastName}
+                        onChange={(value) => updateField('lastName', value)}
+                      />
+                    </div>
 
-            <OnboardingField
-              field="phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="Phone number"
-              value={values.phone}
-              error={errors.phone}
-              onChange={(value) => updateField('phone', value)}
-            />
+                    <OnboardingField
+                      field="email"
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      value={values.email}
+                      error={errors.email}
+                      onChange={(value) => updateField('email', value)}
+                    />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <OnboardingField
-                field="heightCm"
-                type="number"
-                inputMode="decimal"
-                placeholder="Height cm"
-                value={values.heightCm}
-                error={errors.heightCm}
-                onChange={(value) => updateField('heightCm', value)}
-              />
-              <OnboardingField
-                field="currentWeightKg"
-                type="number"
-                inputMode="decimal"
-                placeholder="Weight kg"
-                value={values.currentWeightKg}
-                error={errors.currentWeightKg}
-                onChange={(value) => updateField('currentWeightKg', value)}
-              />
-              <OnboardingField
-                field="targetWeightKg"
-                type="number"
-                inputMode="decimal"
-                placeholder="Target kg"
-                value={values.targetWeightKg}
-                error={errors.targetWeightKg}
-                onChange={(value) => updateField('targetWeightKg', value)}
-              />
-            </div>
+                    <OnboardingField
+                      field="phone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="Phone number"
+                      value={values.phone}
+                      error={errors.phone}
+                      onChange={(value) => updateField('phone', value)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <OnboardingField
+                      field="heightCm"
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="Height cm"
+                      value={values.heightCm}
+                      error={errors.heightCm}
+                      onChange={(value) => updateField('heightCm', value)}
+                    />
+                    <OnboardingField
+                      field="currentWeightKg"
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="Current weight kg"
+                      value={values.currentWeightKg}
+                      error={errors.currentWeightKg}
+                      onChange={(value) => updateField('currentWeightKg', value)}
+                    />
+                    <OnboardingField
+                      field="targetWeightKg"
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="Target weight kg"
+                      value={values.targetWeightKg}
+                      error={errors.targetWeightKg}
+                      onChange={(value) => updateField('targetWeightKg', value)}
+                    />
+                  </>
+                )}
 
-            {serverError && (
-              <div className="rounded-[var(--radius-lg)] border border-[rgba(220,38,38,0.20)] bg-[var(--color-state-error-bg)] p-3">
-                <p className="text-[13px] leading-[18px] text-[var(--color-text-error)]">{serverError}</p>
+                {serverError && (
+                  <div className="rounded-[var(--radius-lg)] border border-[rgba(220,38,38,0.20)] bg-[var(--color-state-error-bg)] p-3">
+                    <p className="text-[13px] leading-[18px] text-[var(--color-text-error)]">{serverError}</p>
+                  </div>
+                )}
+              </div>
+
+              <Button type="submit" loading={saving} disabled={!isCurrentStepFilled || saving} className="mt-12">
+                {step === 'personal' ? 'Continue' : "Let's go"}
+              </Button>
+            </form>
+
+            {submitted && (
+              <div
+                className="mt-4 flex items-start gap-3 rounded-[var(--radius-lg)] border border-[rgba(22,163,74,0.20)] bg-[var(--color-state-success-bg)] p-4"
+                role="status"
+              >
+                <CheckCircle2 className="mt-0.5 flex-shrink-0 text-[var(--color-state-success)]" size={20} />
+                <div>
+                  <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
+                    Profile started{fullName ? ` for ${fullName}` : ''}
+                  </p>
+                  <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
+                    Saved to Supabase. Next step is the Today screen.
+                  </p>
+                  <Link
+                    href="/today"
+                    className="mt-3 inline-flex text-[13px] font-semibold text-[var(--color-text-accent)]"
+                  >
+                    Open Today
+                  </Link>
+                </div>
               </div>
             )}
-
-            <Button type="submit" loading={saving} disabled={!isFormFilled || saving} className="mt-3">
-              Continue
-            </Button>
-          </form>
-
-          {submitted && (
-            <div
-              className="mt-4 flex items-start gap-3 rounded-[var(--radius-lg)] border border-[rgba(22,163,74,0.20)] bg-[var(--color-state-success-bg)] p-4"
-              role="status"
-            >
-              <CheckCircle2 className="mt-0.5 flex-shrink-0 text-[var(--color-state-success)]" size={20} />
-              <div>
-                <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
-                  Profile started{fullName ? ` for ${fullName}` : ''}
-                </p>
-                <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
-                  Saved to Supabase. Next step is the Today screen.
-                </p>
-                <Link
-                  href="/today"
-                  className="mt-3 inline-flex text-[13px] font-semibold text-[var(--color-text-accent)]"
-                >
-                  Open Today
-                </Link>
-              </div>
-            </div>
-          )}
+          </div>
         </section>
 
         <footer className="pb-6 text-center text-[13px] text-[var(--color-text-tertiary)]">
