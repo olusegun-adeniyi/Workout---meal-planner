@@ -157,7 +157,7 @@ Not a cheerleader-motivational app ("You're crushing it! 💪"). Not cold and cl
 
 | Token | Value | Usage | Avoid |
 |---|---|---|---|
-| `color.text.primary` | `#8D8B94` | All primary labels, headings, body copy | Secondary metadata |
+| `color.text.primary` | `#000000` | All primary labels, headings, body copy | Secondary metadata |
 | `color.text.secondary` | `#5c5c5a` | Subheadings, meta labels, secondary descriptions | Primary headings |
 | `color.text.tertiary` | `#9a9a98` | Timestamps, placeholder text, dimmed values | Body copy |
 | `color.text.disabled` | `#c4c4c2` | Disabled form labels, inactive nav items | Active states |
@@ -1521,7 +1521,7 @@ Screen headers follow a consistent pattern:
 - Never rely on colour alone to convey state — always pair with an icon or text label (e.g., "Eaten" text, not just a green dot)
 
 **Checked contrasts:**
-- `color.text.primary` (#8D8B94) on `color.bg.primary` (#fafaf9): ~3.22:1
+- `color.text.primary` (#000000) on `color.bg.primary` (#fafaf9): ~20.1:1
 - `color.text.secondary` (#5c5c5a) on `color.bg.primary`: ~6.5:1 ✓
 - `color.text.accent` (#000000) on `color.surface.default` (#ffffff): ~6.45:1 ✓
 - White text on `color.action.primary` (#000000): ~6.45:1 ✓
@@ -1578,7 +1578,7 @@ Define all tokens in `app/globals.css` inside a `@theme` block:
   --color-bg-primary: #fafaf9;
   --color-bg-secondary: #f2f2f0;
   --color-surface-default: #ffffff;
-  --color-text-primary: #8D8B94;
+  --color-text-primary: #000000;
   --color-text-secondary: #5c5c5a;
   --color-text-tertiary: #9a9a98;
   --color-text-accent: #000000;

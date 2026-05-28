@@ -298,7 +298,7 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
 // ─────────────────────────────────────────────────────────
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'destructive'
-type ButtonSize = 'md' | 'sm'
+type ButtonSize = 'md' | 'sm' | 'icon-sm'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -330,13 +330,18 @@ export function Button({
   ...props
 }: ButtonProps) {
   const isMd = size === 'md'
+  const isIconSm = size === 'icon-sm'
 
   return (
     <button
       disabled={disabled || loading}
       className={cn(
-        'relative flex w-full items-center justify-center font-normal transition-all',
-        isMd ? 'h-[52px] rounded-[var(--radius-pill)] px-6 text-[15px]' : 'h-9 rounded-[var(--radius-pill)] px-4 text-[15px]',
+        'relative flex items-center justify-center font-normal transition-all',
+        isIconSm
+          ? 'h-7 w-7 flex-shrink-0 rounded-[var(--radius-full)] p-0 text-[15px]'
+          : isMd
+            ? 'h-[52px] w-full rounded-[var(--radius-pill)] px-6 text-[15px]'
+            : 'h-9 w-full rounded-[var(--radius-pill)] px-4 text-[15px]',
         BUTTON_VARIANTS[variant],
         className,
       )}

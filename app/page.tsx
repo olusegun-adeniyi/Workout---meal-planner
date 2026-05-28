@@ -73,7 +73,7 @@ function OnboardingField({
 
   return (
     <div>
-      <label className="sr-only" htmlFor={id}>
+      <label className="mb-2 block text-[13px] font-normal leading-[18px] text-black" htmlFor={id}>
         {fieldLabels[field]}
       </label>
       <div className="relative">
@@ -228,18 +228,19 @@ export default function OnboardingPage() {
             <div className="mb-8 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {step === 'body' && (
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="icon-sm"
                     aria-label="Back to personal details"
-                    className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-md)] text-black transition-colors hover:bg-[var(--color-bg-secondary)]"
                     onClick={() => {
                       setErrors({})
                       setServerError(null)
                       setStep('personal')
                     }}
                   >
-                    <ArrowLeft size={16} strokeWidth={2} />
-                  </button>
+                    <ArrowLeft size={16} strokeWidth={2} className="text-black" />
+                  </Button>
                 )}
                 <h1 className="text-[17px] font-semibold leading-[22px] text-black">
                   {stepTitle}
