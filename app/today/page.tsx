@@ -11,7 +11,6 @@ import {
   FloatingActionButton,
   MacroRings,
   MealTimelineRow,
-  NextActionCard,
   ScreenContainer,
   SectionHeader,
   StreakCounter,
@@ -630,34 +629,59 @@ function TodayContent() {
 
         <section>
           {skipConfirmOpen && nextMeal ? (
-            <Card className="p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-secondary)]">
-                Skip this meal?
-              </p>
-              <h2 className="mt-1 text-[24px] font-semibold leading-[28px] text-[var(--color-text-primary)]">
-                {nextMeal.name}
-              </h2>
-              <p className="mt-1 text-[15px] text-[var(--color-text-secondary)]">
-                {nextMeal.calories} cal · {nextMeal.protein}g protein
-              </p>
-              <div className="mt-4 flex gap-2">
+            <Card className="relative min-h-[220px] overflow-hidden p-4">
+              <FoodArtwork meal={nextMeal} className="pointer-events-none absolute -bottom-6 -right-9 h-36 w-48 opacity-95" />
+              <div className="relative max-w-[70%]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-secondary)]">
+                  Skip this meal?
+                </p>
+                <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
+                  {nextMeal.name}
+                </h2>
+                <p className="mt-2 text-[15px] text-[var(--color-text-secondary)]">
+                  {nextMeal.calories} cal · {nextMeal.protein}g protein
+                </p>
+              </div>
+              <div className="relative mt-8 flex gap-2">
                 <Button variant="destructive" onClick={skipMeal}>Confirm skip</Button>
                 <Button variant="secondary" onClick={() => setSkipConfirmOpen(false)}>Keep it</Button>
               </div>
             </Card>
           ) : nextMeal ? (
-            <NextActionCard
-              mealName={nextMeal.name}
-              timeLabel={nextMeal.status === 'due-soon' ? 'EAT IN 23 MIN' : `EAT AT ${nextMeal.time}`}
-              calories={nextMeal.calories}
-              protein={nextMeal.protein}
-              state={nextMeal.status === 'due-soon' ? 'due-soon' : 'upcoming'}
-              onAte={logMeal}
-              onSwap={() => setSwapOpen(true)}
-              onSkip={() => setSkipConfirmOpen(true)}
-            />
+            <Card className="relative min-h-[300px] overflow-hidden p-4">
+              <FoodArtwork meal={nextMeal} className="pointer-events-none absolute -bottom-7 -right-10 h-44 w-56 opacity-95" />
+              <div className="relative max-w-[72%]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
+                  Next up
+                </p>
+                <p className="mt-8 text-[15px] text-[var(--color-text-secondary)]">
+                  {nextMeal.status === 'due-soon' ? 'Eat in 23 min' : `Eat at ${nextMeal.time}`}
+                </p>
+                <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
+                  {nextMeal.name}
+                </h2>
+                <p className="mt-2 text-[15px] leading-[20px] text-[var(--color-text-secondary)]">
+                  {nextMeal.calories} cal · {nextMeal.protein}g protein
+                </p>
+              </div>
+              <div className="relative mt-8 flex gap-2">
+                <Button className="min-w-[120px]" onClick={logMeal}>Ate it</Button>
+                <Button variant="secondary" onClick={() => setSwapOpen(true)}>Swap</Button>
+                <Button variant="ghost" onClick={() => setSkipConfirmOpen(true)}>Skip</Button>
+              </div>
+            </Card>
           ) : (
-            <NextActionCard state="logged" mealName="Today" calories={eatenTotals.calories} protein={eatenTotals.protein} />
+            <Card className="flex min-h-[180px] flex-col justify-center p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
+                Next up
+              </p>
+              <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
+                You are up to date
+              </h2>
+              <p className="mt-2 text-[15px] leading-[20px] text-[var(--color-text-secondary)]">
+                {eatenTotals.calories} cal · {eatenTotals.protein}g protein logged today
+              </p>
+            </Card>
           )}
           <button
             type="button"
@@ -670,28 +694,45 @@ function TodayContent() {
 
         <section className="flex flex-col gap-2">
           <SectionHeader title="Nutrition" />
-          <MacroRings
-            calories={eatenTotals.calories}
-            calorieTarget={recommendation.calorieTarget}
-            protein={eatenTotals.protein}
-            proteinTarget={recommendation.proteinTarget}
-          />
+          <Card className="overflow-hidden bg-[url('/images/desktop-background.png')] bg-cover bg-center p-4">
+            <div className="rounded-[var(--radius-lg)] bg-white/80 p-4 backdrop-blur-[2px]">
+              <MacroRings
+                calories={eatenTotals.calories}
+                calorieTarget={recommendation.calorieTarget}
+                protein={eatenTotals.protein}
+                proteinTarget={recommendation.proteinTarget}
+                className="border-0 bg-transparent p-0"
+              />
+            </div>
+          </Card>
         </section>
 
         <section className="flex flex-col gap-2">
           <SectionHeader title="Meal recommendations" />
           <Card variant="list">
             {recommendedMeals.map((meal, index) => (
-              <MealTimelineRow
+              <div
                 key={meal.id}
-                time={meal.time}
-                slot={meal.slot}
-                mealName={meal.name}
-                calories={meal.calories}
-                protein={meal.protein}
-                status={meal.status}
-                isLast={index === recommendedMeals.length - 1}
-              />
+                className={`grid grid-cols-[44px_58px_1fr] items-center gap-3 px-4 py-3 ${
+                  index !== recommendedMeals.length - 1 ? 'border-b border-[var(--color-border-divider)]' : ''
+                }`}
+              >
+                <p className="text-[13px] text-[var(--color-text-tertiary)]">{meal.time}</p>
+                <FoodArtwork meal={meal} className="h-12 w-14" />
+                <div className="min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="min-w-0 truncate text-[17px] font-medium leading-[22px] text-[var(--color-text-primary)]">
+                      {meal.name}
+                    </p>
+                    <span className="flex-none rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-2.5 py-1 text-[11px] font-medium capitalize text-[var(--color-text-secondary)]">
+                      {meal.status.replace('-', ' ')}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
+                    {meal.calories} cal · {meal.protein}g protein
+                  </p>
+                </div>
+              </div>
             ))}
           </Card>
         </section>
