@@ -287,34 +287,53 @@ function TodayContent() {
   const [notificationOpen, setNotificationOpen] = useState(false)
 
   useEffect(() => {
-    const nextRecommendation = getDailyRecommendation(readStoredProfile())
-    setRecommendation(nextRecommendation)
-    setRecommendedMeals(nextRecommendation.meals)
+    function refreshRecommendations() {
+      const nextRecommendation = getDailyRecommendation(readStoredProfile())
+      setRecommendation(nextRecommendation)
+      setRecommendedMeals((currentMeals) => nextRecommendation.meals.map((freshMeal) => {
+        const existingMeal = currentMeals.find((meal) => meal.id === freshMeal.id)
 
-    if (!('Notification' in window)) return
+        if (existingMeal?.status === 'eaten' || existingMeal?.status === 'skipped') {
+          return { ...freshMeal, ...existingMeal }
+        }
 
-    setNotificationPermission(Notification.permission)
+        return freshMeal
+      }))
+    }
 
-    if (!('serviceWorker' in navigator)) return
+    refreshRecommendations()
+    const refreshInterval = window.setInterval(refreshRecommendations, 60000)
 
-    navigator.serviceWorker.getRegistration('/sw.js').then(async (registration) => {
-      const subscription = await registration?.pushManager.getSubscription()
-      setPushSubscribed(!!subscription)
-      setPushSavedToSupabase(false)
-    }).catch(() => {
-      setPushSubscribed(false)
-      setPushSavedToSupabase(false)
-    })
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission)
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration('/sw.js').then(async (registration) => {
+        const subscription = await registration?.pushManager.getSubscription()
+        setPushSubscribed(!!subscription)
+        setPushSavedToSupabase(false)
+      }).catch(() => {
+        setPushSubscribed(false)
+        setPushSavedToSupabase(false)
+      })
+    }
+
+    return () => window.clearInterval(refreshInterval)
   }, [])
 
   const reminderPreviews = useMemo(() => {
     return getReminderPreviews(readStoredProfile())
   }, [])
 
-  const nextMeal = useMemo(() => {
-    return recommendedMeals.find((meal) => meal.status === 'due-soon')
-      ?? recommendedMeals.find((meal) => meal.status === 'upcoming')
+  const activeRecommendedMeals = useMemo(() => {
+    return recommendedMeals.filter((meal) => meal.status === 'due-soon' || meal.status === 'upcoming')
   }, [recommendedMeals])
+
+  const nextMeal = useMemo(() => {
+    return activeRecommendedMeals.find((meal) => meal.status === 'due-soon')
+      ?? activeRecommendedMeals.find((meal) => meal.status === 'upcoming')
+  }, [activeRecommendedMeals])
 
   const eatenTotals = useMemo(() => {
     return loggedMeals.reduce(
@@ -710,30 +729,37 @@ function TodayContent() {
         <section className="flex flex-col gap-2">
           <SectionHeader title="Meal recommendations" />
           <Card variant="list">
-            {recommendedMeals.map((meal, index) => (
-              <div
-                key={meal.id}
-                className={`grid grid-cols-[44px_58px_1fr] items-center gap-3 px-4 py-3 ${
-                  index !== recommendedMeals.length - 1 ? 'border-b border-[var(--color-border-divider)]' : ''
-                }`}
-              >
-                <p className="text-[13px] text-[var(--color-text-tertiary)]">{meal.time}</p>
-                <FoodArtwork meal={meal} className="h-12 w-14" />
-                <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="min-w-0 truncate text-[17px] font-medium leading-[22px] text-[var(--color-text-primary)]">
-                      {meal.name}
+            {activeRecommendedMeals.length > 0 ? (
+              activeRecommendedMeals.map((meal, index) => (
+                <div
+                  key={meal.id}
+                  className={`grid grid-cols-[44px_58px_1fr] items-center gap-3 px-4 py-3 ${
+                    index !== activeRecommendedMeals.length - 1 ? 'border-b border-[var(--color-border-divider)]' : ''
+                  }`}
+                >
+                  <p className="text-[13px] text-[var(--color-text-tertiary)]">{meal.time}</p>
+                  <FoodArtwork meal={meal} className="h-12 w-14" />
+                  <div className="min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="min-w-0 truncate text-[17px] font-medium leading-[22px] text-[var(--color-text-primary)]">
+                        {meal.name}
+                      </p>
+                      <span className="flex-none rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-2.5 py-1 text-[11px] font-medium capitalize text-[var(--color-text-secondary)]">
+                        {meal.status.replace('-', ' ')}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
+                      {meal.calories} cal · {meal.protein}g protein
                     </p>
-                    <span className="flex-none rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-2.5 py-1 text-[11px] font-medium capitalize text-[var(--color-text-secondary)]">
-                      {meal.status.replace('-', ' ')}
-                    </span>
                   </div>
-                  <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
-                    {meal.calories} cal · {meal.protein}g protein
-                  </p>
                 </div>
+              ))
+            ) : (
+              <div className="px-4 py-6">
+                <p className="text-[15px] font-medium text-[var(--color-text-primary)]">No remaining meals today</p>
+                <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">Tomorrow&apos;s recommendations will refresh automatically.</p>
               </div>
-            ))}
+            )}
           </Card>
         </section>
 
@@ -966,25 +992,32 @@ function TodayContent() {
                 <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">Meal recommendations</h2>
               </div>
               <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-3 py-1 text-[13px] font-medium text-[var(--color-text-secondary)]">
-                {recommendedMeals.length} meals
+                {activeRecommendedMeals.length} meals
               </span>
             </div>
             <div className="mt-6 grid gap-3">
-              {recommendedMeals.map((meal) => (
-                <div key={meal.id} className="grid grid-cols-[70px_72px_1fr_auto] items-center gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] p-4">
-                  <p className="text-[14px] text-[var(--color-text-tertiary)]">{meal.time}</p>
-                  <div className="flex h-16 w-16 items-center justify-center overflow-visible">
-                    <FoodArtwork meal={meal} className="h-16 w-20" />
+              {activeRecommendedMeals.length > 0 ? (
+                activeRecommendedMeals.map((meal) => (
+                  <div key={meal.id} className="grid grid-cols-[70px_72px_1fr_auto] items-center gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] p-4">
+                    <p className="text-[14px] text-[var(--color-text-tertiary)]">{meal.time}</p>
+                    <div className="flex h-16 w-16 items-center justify-center overflow-visible">
+                      <FoodArtwork meal={meal} className="h-16 w-20" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-[17px] font-medium text-[var(--color-text-primary)]">{meal.name}</p>
+                      <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">{meal.calories} cal · {meal.protein}g protein</p>
+                    </div>
+                    <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-3 py-1 text-[12px] font-medium text-[var(--color-text-secondary)]">
+                      {meal.status.replace('-', ' ')}
+                    </span>
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-[17px] font-medium text-[var(--color-text-primary)]">{meal.name}</p>
-                    <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">{meal.calories} cal · {meal.protein}g protein</p>
+                ))
+              ) : (
+                <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] p-5">
+                  <p className="text-[17px] font-medium text-[var(--color-text-primary)]">No remaining meals today</p>
+                  <p className="mt-1 text-[14px] text-[var(--color-text-secondary)]">Tomorrow&apos;s recommendations will refresh automatically.</p>
                   </div>
-                  <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-3 py-1 text-[12px] font-medium text-[var(--color-text-secondary)]">
-                    {meal.status.replace('-', ' ')}
-                  </span>
-                </div>
-              ))}
+              )}
             </div>
           </DesktopPanel>
 

@@ -1,4 +1,4 @@
-export type MealStatus = 'eaten' | 'upcoming' | 'due-soon' | 'skipped'
+export type MealStatus = 'eaten' | 'upcoming' | 'due-soon' | 'skipped' | 'past'
 
 export type MealSlotId = 'breakfast' | 'brunch' | 'lunch' | 'dinner'
 
@@ -46,47 +46,137 @@ export const recommendedMealTimes: Record<MealSlotId, string> = {
   dinner: '18:30',
 }
 
-const mealTemplate: Record<MealSlotId, Omit<RecommendedMeal, 'calories' | 'protein' | 'status'>> = {
-  breakfast: {
-    id: 'breakfast',
-    slot: 'Breakfast',
-    time: recommendedMealTimes.breakfast,
-    reminderTime: '09:00',
-    name: 'Whey porridge with banana and peanut butter',
-    description: 'Early high-protein breakfast to start the eating window.',
-    cookTime: 10,
-    cuisine: 'British',
-  },
-  brunch: {
-    id: 'brunch',
-    slot: 'Brunch',
-    time: recommendedMealTimes.brunch,
-    reminderTime: '11:30',
-    name: 'Greek yoghurt, granola and cashews',
-    description: 'Small calorie-dense meal to keep the surplus on track.',
-    cookTime: 5,
-    cuisine: 'Quick',
-  },
-  lunch: {
-    id: 'lunch',
-    slot: 'Lunch',
-    time: recommendedMealTimes.lunch,
-    reminderTime: '14:00',
-    name: 'Jollof rice, grilled chicken and mixed veg',
-    description: 'Largest meal while digestion and training energy are still well supported.',
-    cookTime: 35,
-    cuisine: 'Nigerian',
-  },
-  dinner: {
-    id: 'dinner',
-    slot: 'Dinner',
-    time: recommendedMealTimes.dinner,
-    reminderTime: '18:30',
-    name: 'Beef stew, rice and plantain',
-    description: 'Earlier evening meal to avoid pushing most calories close to sleep.',
-    cookTime: 45,
-    cuisine: 'Nigerian',
-  },
+type MealTemplate = Omit<RecommendedMeal, 'calories' | 'protein' | 'status'>
+
+const mealTemplates: Record<MealSlotId, MealTemplate[]> = {
+  breakfast: [
+    {
+      id: 'breakfast',
+      slot: 'Breakfast',
+      time: recommendedMealTimes.breakfast,
+      reminderTime: '09:00',
+      name: 'Whey porridge with banana and peanut butter',
+      description: 'Early high-protein breakfast to start the eating window.',
+      cookTime: 10,
+      cuisine: 'British',
+    },
+    {
+      id: 'breakfast',
+      slot: 'Breakfast',
+      time: recommendedMealTimes.breakfast,
+      reminderTime: '09:00',
+      name: 'Protein oats with berries and almond butter',
+      description: 'A quick high-protein bowl with slow carbs and calorie support.',
+      cookTime: 10,
+      cuisine: 'Quick',
+    },
+    {
+      id: 'breakfast',
+      slot: 'Breakfast',
+      time: recommendedMealTimes.breakfast,
+      reminderTime: '09:00',
+      name: 'Scrambled eggs, toast and avocado',
+      description: 'Simple breakfast with protein, fats and easy morning energy.',
+      cookTime: 12,
+      cuisine: 'British',
+    },
+  ],
+  brunch: [
+    {
+      id: 'brunch',
+      slot: 'Brunch',
+      time: recommendedMealTimes.brunch,
+      reminderTime: '11:30',
+      name: 'Greek yoghurt, granola and cashews',
+      description: 'Small calorie-dense meal to keep the surplus on track.',
+      cookTime: 5,
+      cuisine: 'Quick',
+    },
+    {
+      id: 'brunch',
+      slot: 'Brunch',
+      time: recommendedMealTimes.brunch,
+      reminderTime: '11:30',
+      name: 'Cottage cheese, banana and honey',
+      description: 'A compact protein snack that is easy to eat between meals.',
+      cookTime: 5,
+      cuisine: 'Quick',
+    },
+    {
+      id: 'brunch',
+      slot: 'Brunch',
+      time: recommendedMealTimes.brunch,
+      reminderTime: '11:30',
+      name: 'Tuna melt on sourdough',
+      description: 'Higher-protein brunch for days when breakfast was lighter.',
+      cookTime: 15,
+      cuisine: 'British',
+    },
+  ],
+  lunch: [
+    {
+      id: 'lunch',
+      slot: 'Lunch',
+      time: recommendedMealTimes.lunch,
+      reminderTime: '14:00',
+      name: 'Jollof rice, grilled chicken and mixed veg',
+      description: 'Largest meal while digestion and training energy are still well supported.',
+      cookTime: 35,
+      cuisine: 'Nigerian',
+    },
+    {
+      id: 'lunch',
+      slot: 'Lunch',
+      time: recommendedMealTimes.lunch,
+      reminderTime: '14:00',
+      name: 'Chicken suya wrap and yoghurt',
+      description: 'Portable lunch with protein, carbs and a quick calorie lift.',
+      cookTime: 20,
+      cuisine: 'Nigerian',
+    },
+    {
+      id: 'lunch',
+      slot: 'Lunch',
+      time: recommendedMealTimes.lunch,
+      reminderTime: '14:00',
+      name: 'Turkey chilli with rice',
+      description: 'Batch-friendly lunch with lean protein and steady carbs.',
+      cookTime: 30,
+      cuisine: 'Quick',
+    },
+  ],
+  dinner: [
+    {
+      id: 'dinner',
+      slot: 'Dinner',
+      time: recommendedMealTimes.dinner,
+      reminderTime: '18:30',
+      name: 'Beef stew, rice and plantain',
+      description: 'Earlier evening meal to avoid pushing most calories close to sleep.',
+      cookTime: 45,
+      cuisine: 'Nigerian',
+    },
+    {
+      id: 'dinner',
+      slot: 'Dinner',
+      time: recommendedMealTimes.dinner,
+      reminderTime: '18:30',
+      name: 'Salmon, potatoes and greens',
+      description: 'Protein-rich evening meal with a lighter finish.',
+      cookTime: 30,
+      cuisine: 'British',
+    },
+    {
+      id: 'dinner',
+      slot: 'Dinner',
+      time: recommendedMealTimes.dinner,
+      reminderTime: '18:30',
+      name: 'Chicken stew, yam and spinach',
+      description: 'A filling dinner that keeps protein and carbs balanced.',
+      cookTime: 40,
+      cuisine: 'Nigerian',
+    },
+  ],
 }
 
 const calorieSplit: Record<MealSlotId, number> = {
@@ -196,9 +286,20 @@ function getMealStatus(time: string, now = new Date()): MealStatus {
 
   const minutesUntil = (mealTime.getTime() - now.getTime()) / 60000
 
-  if (minutesUntil < -45) return 'due-soon'
+  if (minutesUntil < -45) return 'past'
   if (minutesUntil <= 30) return 'due-soon'
   return 'upcoming'
+}
+
+function getDaySeed(date: Date) {
+  const startOfYear = new Date(date.getFullYear(), 0, 0)
+  return Math.floor((date.getTime() - startOfYear.getTime()) / 86400000)
+}
+
+function getMealTemplate(slot: MealSlotId, now: Date) {
+  const templates = mealTemplates[slot]
+  const slotOffset = (Object.keys(mealTemplates) as MealSlotId[]).indexOf(slot)
+  return templates[(getDaySeed(now) + slotOffset) % templates.length]
 }
 
 export function getDailyRecommendation(profile?: ProfileInputs, now = new Date()): DailyRecommendation {
@@ -209,12 +310,16 @@ export function getDailyRecommendation(profile?: ProfileInputs, now = new Date()
     month: 'short',
   })
 
-  const meals = (Object.keys(mealTemplate) as MealSlotId[]).map((slot) => ({
-    ...mealTemplate[slot],
-    calories: roundToNearest(calorieTarget * calorieSplit[slot], 10),
-    protein: Math.max(20, Math.round(proteinTarget * proteinSplit[slot])),
-    status: getMealStatus(mealTemplate[slot].time, now),
-  }))
+  const meals = (Object.keys(mealTemplates) as MealSlotId[]).map((slot) => {
+    const template = getMealTemplate(slot, now)
+
+    return {
+      ...template,
+      calories: roundToNearest(calorieTarget * calorieSplit[slot], 10),
+      protein: Math.max(20, Math.round(proteinTarget * proteinSplit[slot])),
+      status: getMealStatus(template.time, now),
+    }
+  })
 
   return {
     dateLabel,
