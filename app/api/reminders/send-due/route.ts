@@ -10,8 +10,9 @@ export const dynamic = 'force-dynamic'
 async function sendDueReminders(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET || process.env.REMINDER_CRON_SECRET
   const authHeader = request.headers.get('authorization')
+  const querySecret = request.nextUrl.searchParams.get('secret')
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}` && querySecret !== cronSecret) {
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
   }
 
