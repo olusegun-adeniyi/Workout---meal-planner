@@ -44,6 +44,10 @@ type PlanDay = {
   }
 }
 
+type StoredProfile = ProfileInputs & {
+  profileId?: string
+}
+
 const weekPlan: PlanDay[] = [
   {
     id: 'mon',
@@ -144,7 +148,7 @@ const swapOptions = [
   { name: 'Salmon, potatoes and greens', calories: 710, protein: 49, cookTime: 30, cuisine: 'British' },
 ]
 
-function readStoredProfile(): ProfileInputs {
+function readStoredProfile(): StoredProfile {
   if (typeof window === 'undefined') return {}
 
   const stored = window.localStorage.getItem('forge:onboarding')
@@ -155,12 +159,14 @@ function readStoredProfile(): ProfileInputs {
       heightCm?: number
       currentWeightKg?: number
       targetWeightKg?: number
+      profileId?: string
     }
 
     return {
       heightCm: parsed.heightCm,
       currentWeightKg: parsed.currentWeightKg,
       targetWeightKg: parsed.targetWeightKg,
+      profileId: parsed.profileId,
     }
   } catch {
     return {}
@@ -190,6 +196,73 @@ function buildWeekPlan(profile?: ProfileInputs): PlanDay[] {
   }))
 }
 
+function readGeneratedPlan(value: unknown): PlanDay[] | null {
+  if (!Array.isArray(value) || value.length !== 7) return null
+
+  return value.map((day) => {
+    if (!day || typeof day !== 'object') throw new Error('Invalid generated day')
+
+    const candidate = day as {
+      id?: unknown
+      label?: unknown
+      date?: unknown
+      meals?: unknown
+      workout?: unknown
+    }
+
+    if (
+      typeof candidate.id !== 'string'
+      || typeof candidate.label !== 'string'
+      || typeof candidate.date !== 'string'
+      || !Array.isArray(candidate.meals)
+      || !candidate.workout
+      || typeof candidate.workout !== 'object'
+    ) {
+      throw new Error('Invalid generated day')
+    }
+
+    const workout = candidate.workout as { split?: unknown; name?: unknown; duration?: unknown }
+
+    return {
+      id: candidate.id,
+      label: candidate.label,
+      date: candidate.date,
+      meals: candidate.meals.map((meal, index) => {
+        if (!meal || typeof meal !== 'object') throw new Error('Invalid generated meal')
+        const item = meal as Record<string, unknown>
+
+        if (
+          typeof item.slot !== 'string'
+          || typeof item.time !== 'string'
+          || typeof item.name !== 'string'
+          || typeof item.calories !== 'number'
+          || typeof item.protein !== 'number'
+          || typeof item.cookTime !== 'number'
+          || typeof item.cuisine !== 'string'
+        ) {
+          throw new Error('Invalid generated meal')
+        }
+
+        return {
+          id: `${candidate.id}-${item.slot.toLowerCase()}-${index}`,
+          slot: item.slot as MealSlot,
+          time: item.time,
+          name: item.name,
+          calories: item.calories,
+          protein: item.protein,
+          cookTime: item.cookTime,
+          cuisine: item.cuisine,
+        }
+      }),
+      workout: {
+        split: workout.split as SplitDay,
+        name: String(workout.name),
+        duration: Number(workout.duration),
+      },
+    }
+  })
+}
+
 function PlanPanel({
   children,
   className = '',
@@ -213,7 +286,11 @@ function trainingFocusLabel(day: PlanDay) {
 }
 
 function todayId() {
-  return new Date().toISOString().slice(0, 10)
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function PlanContent() {
@@ -224,6 +301,7 @@ function PlanContent() {
   const [locked, setLocked] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [swappingMeal, setSwappingMeal] = useState<PlannedMeal | null>(null)
+  const [planSource, setPlanSource] = useState<'ai' | 'fallback'>('fallback')
 
   const selectedDay = useMemo(() => {
     return plan?.find((day) => day.id === selectedDayId) ?? plan?.[0]
@@ -245,15 +323,41 @@ function PlanContent() {
     setSelectedDayId(todayId())
   }, [])
 
-  function generatePlan() {
+  async function generatePlan() {
     setGenerating(true)
-    window.setTimeout(() => {
-      setPlan(buildWeekPlan(readStoredProfile()))
+    const profile = readStoredProfile()
+
+    try {
+      const response = await fetch('/api/plan/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile),
+      })
+      const result = await response.json().catch(() => null)
+      const nextPlan = readGeneratedPlan(result?.plan)
+
+      if (!response.ok || !nextPlan) {
+        throw new Error(result?.error || 'Could not generate plan')
+      }
+
+      setPlan(nextPlan)
       setSelectedDayId(todayId())
       setLocked(false)
+      setPlanSource(result.source === 'ai' ? 'ai' : 'fallback')
+      toast({
+        message: result.source === 'ai' ? 'AI plan generated' : (result.message ?? 'Plan generated'),
+        type: 'success',
+      })
+    } catch (error) {
+      console.error(error)
+      setPlan(buildWeekPlan(profile))
+      setSelectedDayId(todayId())
+      setLocked(false)
+      setPlanSource('fallback')
+      toast({ message: 'Could not reach AI. Local plan loaded.', type: 'neutral' })
+    } finally {
       setGenerating(false)
-      toast({ message: 'Plan generated', type: 'success' })
-    }, 900)
+    }
   }
 
   function swapMeal(replacement: (typeof swapOptions)[number]) {
@@ -302,6 +406,11 @@ function PlanContent() {
               {locked && (
                 <span className="rounded-[var(--radius-pill)] bg-[var(--color-action-primary-subtle)] px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-accent)]">
                   Locked
+                </span>
+              )}
+              {planSource === 'ai' && (
+                <span className="rounded-[var(--radius-pill)] bg-[var(--color-bg-secondary)] px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-secondary)]">
+                  AI plan
                 </span>
               )}
             </div>
@@ -463,6 +572,11 @@ function PlanContent() {
             {locked && (
               <span className="rounded-[var(--radius-full)] bg-[var(--color-action-primary-subtle)] px-4 py-2 text-[13px] font-medium text-[var(--color-text-primary)]">
                 Locked
+              </span>
+            )}
+            {planSource === 'ai' && (
+              <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[13px] font-medium text-[var(--color-text-secondary)]">
+                AI plan
               </span>
             )}
           </div>

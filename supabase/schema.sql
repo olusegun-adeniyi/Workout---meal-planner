@@ -47,3 +47,24 @@ on public.push_subscriptions
 for all
 using (auth.role() = 'service_role')
 with check (auth.role() = 'service_role');
+
+create table if not exists public.weekly_plans (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid references public.user_profiles(id) on delete set null,
+  week_starting_date date not null unique,
+  source text not null check (source in ('ai', 'fallback')),
+  plan jsonb not null,
+  locked boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.weekly_plans enable row level security;
+
+drop policy if exists "Service role can manage weekly plans" on public.weekly_plans;
+
+create policy "Service role can manage weekly plans"
+on public.weekly_plans
+for all
+using (auth.role() = 'service_role')
+with check (auth.role() = 'service_role');

@@ -78,6 +78,39 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_plans: {
+        Row: {
+          id: string
+          profile_id: string | null
+          week_starting_date: string
+          source: 'ai' | 'fallback'
+          plan: Json
+          locked: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id?: string | null
+          week_starting_date: string
+          source: 'ai' | 'fallback'
+          plan: Json
+          locked?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string | null
+          week_starting_date?: string
+          source?: 'ai' | 'fallback'
+          plan?: Json
+          locked?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

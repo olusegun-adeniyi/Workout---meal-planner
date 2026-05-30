@@ -296,6 +296,13 @@ function getDaySeed(date: Date) {
   return Math.floor((date.getTime() - startOfYear.getTime()) / 86400000)
 }
 
+function toLocalIsoDate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function getMealTemplate(slot: MealSlotId, now: Date) {
   const templates = mealTemplates[slot]
   const slotOffset = (Object.keys(mealTemplates) as MealSlotId[]).indexOf(slot)
@@ -373,7 +380,7 @@ export function getWeeklyRecommendation(profile?: ProfileInputs, startDate = new
     const day = getDailyRecommendation(profile, date)
 
     return {
-      id: date.toISOString().slice(0, 10),
+      id: toLocalIsoDate(date),
       label: date.toLocaleDateString('en-GB', { weekday: 'short' }),
       date: date.toLocaleDateString('en-GB', { day: '2-digit' }),
       meals: day.meals,
