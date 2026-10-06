@@ -1,9 +1,16 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
+// The SDK's output-format helper takes zod v4 schemas; zod 3.25 ships v4 at this path.
+import { z } from 'zod/v4'
 import { AiWeeklyPlanSchema, type AiWeeklyPlan } from './schemas'
-import { buildWeeklyPlanPrompt } from './prompts'
+import { buildWeeklyPlanPrompt, buildRetryInstruction } from './prompts'
 import { getTargets, type ProfileInputs } from '@/lib/recommendations'
+import { addDaysToIso } from '@/lib/time/london'
 
-const illustratedMealNames = [
+const DEFAULT_MODEL = 'claude-opus-5-5'
+
+// Meals are limited to these so every suggestion has a matching illustration.
+export const illustratedMealNames = [
   'Whey porridge with banana and peanut butter',
   'Protein oats with berries and almond butter',
   'Scrambled eggs, toast and avocado',
@@ -18,58 +25,55 @@ const illustratedMealNames = [
   'Chicken stew, yam and spinach',
 ] as const
 
-const weeklyPlanTool = {
-  name: 'create_weekly_plan',
-  description: 'Return a validated seven-day nutrition and training plan.',
-  input_schema: {
-    type: 'object',
-    properties: {
-      days: {
-        type: 'array',
-        minItems: 7,
-        maxItems: 7,
-        items: {
-          type: 'object',
-          properties: {
-            id: { type: 'string', description: 'ISO date in YYYY-MM-DD format' },
-            label: { type: 'string', description: 'Three-letter weekday, such as Mon' },
-            date: { type: 'string', description: 'Two-digit day of month' },
-            meals: {
-              type: 'array',
-              minItems: 4,
-              maxItems: 4,
-              items: {
-                type: 'object',
-                properties: {
-                  slot: { type: 'string', enum: ['Breakfast', 'Brunch', 'Lunch', 'Dinner'] },
-                  time: { type: 'string', description: '24-hour time in HH:mm format' },
-                  name: { type: 'string', enum: illustratedMealNames },
-                  calories: { type: 'number' },
-                  protein: { type: 'number' },
-                  cookTime: { type: 'number' },
-                  cuisine: { type: 'string' },
-                },
-                required: ['slot', 'time', 'name', 'calories', 'protein', 'cookTime', 'cuisine'],
-              },
-            },
-            workout: {
-              type: 'object',
-              properties: {
-                split: { type: 'string', enum: ['Push', 'Pull', 'Legs', 'Upper', 'Rest'] },
-                name: { type: 'string' },
-                duration: { type: 'number' },
-              },
-              required: ['split', 'name', 'duration'],
-            },
-          },
-          required: ['id', 'label', 'date', 'meals', 'workout'],
-        },
-      },
-    },
-    required: ['days'],
-  },
-} as const
+// What the model is constrained to emit. Range and date checks that JSON-schema
+// constraints can't express are enforced afterwards by AiWeeklyPlanSchema.
+const WeeklyPlanOutputSchema = z.object({
+  days: z.array(z.object({
+    id: z.string().describe('ISO date, YYYY-MM-DD'),
+    label: z.string().describe('Three-letter weekday, e.g. Mon'),
+    date: z.string().describe('Two-digit day of month, e.g. 06'),
+    meals: z.array(z.object({
+      slot: z.enum(['Breakfast', 'Brunch', 'Lunch', 'Dinner']),
+      time: z.string().describe('24-hour HH:mm'),
+      name: z.enum(illustratedMealNames),
+      calories: z.number().int(),
+      protein: z.number().int(),
+      cookTime: z.number().int(),
+      cuisine: z.string(),
+    })),
+    workout: z.object({
+      split: z.enum(['Push', 'Pull', 'Legs', 'Upper', 'Rest']),
+      name: z.string(),
+      duration: z.number().int(),
+    }),
+  })),
+})
 
+export class WeeklyPlanGenerationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'WeeklyPlanGenerationError'
+  }
+}
+
+function validatePlan(candidate: unknown, weekStarting: string): { plan: AiWeeklyPlan } | { problems: string[] } {
+  const parsed = AiWeeklyPlanSchema.safeParse(candidate)
+  if (!parsed.success) {
+    return { problems: parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`) }
+  }
+  const wrongDates = parsed.data.days
+    .map((day, index) => ({ got: day.id, want: addDaysToIso(weekStarting, index) }))
+    .filter(({ got, want }) => got !== want)
+  if (wrongDates.length > 0) {
+    return { problems: wrongDates.map(({ got, want }) => `day id ${got} should be ${want}`) }
+  }
+  return { plan: parsed.data }
+}
+
+/**
+ * One retry with the validation problems spelled out (CLAUDE.md rule 10). A
+ * second failure throws so malformed data is never written.
+ */
 export async function generateWeeklyPlanWithAi({
   profile,
   weekStarting,
@@ -77,31 +81,42 @@ export async function generateWeeklyPlanWithAi({
   profile: ProfileInputs
   weekStarting: string
 }): Promise<AiWeeklyPlan> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) throw new Error('Missing ANTHROPIC_API_KEY')
+  if (!process.env.ANTHROPIC_API_KEY) throw new WeeklyPlanGenerationError('Missing ANTHROPIC_API_KEY')
 
-  const client = new Anthropic({ apiKey })
+  const client = new Anthropic()
   const targets = getTargets(profile)
-  const response = await client.messages.create({
-    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
-    max_tokens: 5000,
-    tools: [weeklyPlanTool],
-    tool_choice: { type: 'tool', name: weeklyPlanTool.name },
-    messages: [{
-      role: 'user',
-      content: buildWeeklyPlanPrompt({
-        profile,
-        weekStarting,
-        calorieTarget: targets.calorieTarget,
-        proteinTarget: targets.proteinTarget,
-      }),
-    }],
-  })
+  const prompt = buildWeeklyPlanPrompt({ profile, weekStarting, ...targets })
+  let problems: string[] = []
 
-  const toolUse = response.content.find((block) => block.type === 'tool_use')
-  if (!toolUse || toolUse.name !== weeklyPlanTool.name) {
-    throw new Error('AI did not return a weekly plan')
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: 'user', content: prompt }]
+    if (attempt > 0) messages.push({ role: 'user', content: buildRetryInstruction(problems) })
+
+    const response = await client.beta.messages.parse({
+      model: process.env.ANTHROPIC_MODEL || DEFAULT_MODEL,
+      max_tokens: 16000,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      output_config: {
+        effort: 'medium',
+        format: betaZodOutputFormat(WeeklyPlanOutputSchema),
+      },
+      messages,
+    })
+
+    if (response.stop_reason === 'refusal') {
+      throw new WeeklyPlanGenerationError('The model declined to generate a plan.')
+    }
+    if (response.stop_reason === 'max_tokens') {
+      problems = ['The response was cut off. Keep each field short.']
+      continue
+    }
+
+    const result = validatePlan(response.parsed_output, weekStarting)
+    if ('plan' in result) return result.plan
+    problems = result.problems
+    console.warn(`Weekly plan attempt ${attempt + 1} failed validation`, problems.slice(0, 5))
   }
 
-  return AiWeeklyPlanSchema.parse(toolUse.input)
+  throw new WeeklyPlanGenerationError(`Plan failed validation twice: ${problems.slice(0, 3).join('; ')}`)
 }

@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { PushSubscription } from 'web-push'
 import { sendMealReminder } from '@/lib/push'
+import { SetupRequiredError } from '@/lib/db/queries/errors'
+import { getMealLogsForDate } from '@/lib/db/queries/meal-logs'
+import { toDailyRecommendation } from '@/lib/plans/plan-day'
+import { getPlanDay } from '@/lib/plans/weekly-plan'
 import { getDueReminder } from '@/lib/recommendations'
+import { getLondonToday } from '@/lib/time/london'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -16,7 +21,16 @@ async function sendDueReminders(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
   }
 
-  const dueMeal = getDueReminder()
+  // Remind about the same meals the Today screen shows, and never about one already logged.
+  const today = getLondonToday().iso
+  const plannedMeals = toDailyRecommendation(await getPlanDay(today)).meals
+  const loggedSlots = new Set(
+    (await getMealLogsForDate(today).catch((error) => {
+      if (error instanceof SetupRequiredError) return []
+      throw error
+    })).map((log) => log.slot),
+  )
+  const dueMeal = getDueReminder(undefined, plannedMeals.filter((meal) => !loggedSlots.has(meal.id)))
 
   if (!dueMeal) {
     return NextResponse.json({

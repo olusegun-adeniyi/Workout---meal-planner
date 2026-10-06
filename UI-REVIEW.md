@@ -189,6 +189,27 @@ Use this checklist on:
 
 ---
 
+## Approved exceptions
+
+Deliberate, signed-off deviations from the items above. A screen listed here passes that item *for the stated reason only*; anything outside that scope is still judged by the checklist. Commits touching these areas still carry the `[UI-EXCEPTION]` tag.
+
+### Today screen (mobile) — `design_handoff_today_calendar/`
+
+The handoff is high-fidelity and was explicitly chosen over the base aesthetic. Scope: `app/today/page.tsx` (mobile branch) and `components/today/`.
+
+| Item | Exception | Reason |
+|---|---|---|
+| 1 | Handoff palette (brand blue `#00AEFF`, icon orange `#FF5900`, date orange `#E07B00`, gauge green/amber, neutral greys) instead of the coral/off-white palette | Final handoff colours. Defined once as `--today-*` variables in `globals.css`; components reference variables, never hex. |
+| 1 | Inter (400/500/600) instead of Geist, loaded via `next/font/google` and scoped to the mobile Today root | Handoff typography. No Geist Mono for numbers on this screen. |
+| 1 | Arbitrary radii and sizes (`rounded-[20px]` cards, `rounded-[8px]` cells, `rounded-[120px]` pills, `text-[14px]`, `pl-[18px]`) | Pixel values from the Figma source; no token scale maps onto them cleanly. |
+| 2 | "Ate it" is dark grey `#333333`, not coral | Handoff primary button. It is still the only filled button in the card, so it remains the dominant action. |
+| 4 | Calendar date cells are 40×48 collapsed (below 44 wide) | Seven cells plus the calendar button have to fit across 393pt. The cells expand to ~48×48 in the open grid. |
+| 4 | Drag handle hit area is 120×28 | Handoff spec. The handle is a convenience: the calendar button and the close X are the primary controls and both meet 44px tap height. |
+| 8 | Inline `style` for calendar geometry (position, width, opacity, scale, `color-mix` colours) | Values are recomputed every animation frame from the sheet progress; they can't be classes. |
+| 6 | No H1 on the mobile Today screen | Handoff has no screen title. The calendar sheet and "Next suggestion" card carry orientation. |
+
+---
+
 ## Process
 
 When Claude Code finishes a screen:

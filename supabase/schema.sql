@@ -68,3 +68,49 @@ on public.weekly_plans
 for all
 using (auth.role() = 'service_role')
 with check (auth.role() = 'service_role');
+
+-- Logging (Today screen). One row per planned slot per day; custom logs have a
+-- null slot, and NULLs are distinct under UNIQUE, so any number are allowed.
+create table if not exists public.meal_logs (
+  id uuid primary key default gen_random_uuid(),
+  log_date date not null,
+  slot text check (slot in ('breakfast', 'brunch', 'lunch', 'dinner')),
+  status text not null check (status in ('eaten', 'skipped')),
+  source text not null check (source in ('planned', 'custom_text')),
+  name text not null,
+  calories integer not null check (calories >= 0),
+  protein_g integer not null check (protein_g >= 0),
+  notes text,
+  logged_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  unique (log_date, slot)
+);
+
+create index if not exists meal_logs_log_date_idx on public.meal_logs (log_date);
+
+alter table public.meal_logs enable row level security;
+
+drop policy if exists "Service role can manage meal logs" on public.meal_logs;
+
+create policy "Service role can manage meal logs"
+on public.meal_logs
+for all
+using (auth.role() = 'service_role')
+with check (auth.role() = 'service_role');
+
+create table if not exists public.workout_logs (
+  id uuid primary key default gen_random_uuid(),
+  log_date date not null unique,
+  split_label text not null,
+  completed_at timestamptz not null default now()
+);
+
+alter table public.workout_logs enable row level security;
+
+drop policy if exists "Service role can manage workout logs" on public.workout_logs;
+
+create policy "Service role can manage workout logs"
+on public.workout_logs
+for all
+using (auth.role() = 'service_role')
+with check (auth.role() = 'service_role');

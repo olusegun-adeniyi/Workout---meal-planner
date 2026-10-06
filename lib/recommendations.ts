@@ -279,7 +279,7 @@ export function getTargets(profile?: ProfileInputs) {
   }
 }
 
-function getMealStatus(time: string, now = new Date()): MealStatus {
+export function getMealStatus(time: string, now = new Date()): MealStatus {
   const [hours, minutes] = time.split(':').map(Number)
   const mealTime = new Date(now)
   mealTime.setHours(hours, minutes, 0, 0)
@@ -350,8 +350,7 @@ export function getReminderPreviews(profile?: ProfileInputs) {
   }))
 }
 
-export function getDueReminder(now = new Date()) {
-  const recommendation = getDailyRecommendation(undefined, now)
+export function getDueReminder(now = new Date(), meals: RecommendedMeal[] = getDailyRecommendation(undefined, now).meals) {
   const londonTime = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/London',
     hour: '2-digit',
@@ -363,7 +362,7 @@ export function getDueReminder(now = new Date()) {
   const currentClockMinutes = Number(londonTime.find((part) => part.type === 'minute')?.value ?? now.getMinutes())
   const currentMinutes = currentHours * 60 + currentClockMinutes
 
-  return recommendation.meals.find((meal) => {
+  return meals.find((meal) => {
     const [hours, minutes] = meal.reminderTime.split(':').map(Number)
     const reminderMinutes = hours * 60 + minutes
     return Math.abs(currentMinutes - reminderMinutes) <= 7
@@ -387,4 +386,20 @@ export function getWeeklyRecommendation(profile?: ProfileInputs, startDate = new
       workout: day.workout,
     }
   })
+}
+
+export type WorkoutSplit = 'Push' | 'Pull' | 'Legs' | 'Upper' | 'Rest'
+
+const splitLabels: Record<WorkoutSplit, string> = {
+  Push: 'Push day',
+  Pull: 'Pull day',
+  Legs: 'Leg day',
+  Upper: 'Upper day',
+  Rest: 'Rest day',
+}
+
+/** The plan names the split; the exercise list comes from the local library for that split. */
+export function getWorkoutForSplit(split: WorkoutSplit, muscleGroups: string, estimatedMinutes: number): RecommendedWorkout {
+  const template = workoutsByDay.find((workout) => workout.splitLabel === splitLabels[split]) ?? workoutsByDay[0]
+  return { ...template, muscleGroups, estimatedMinutes }
 }

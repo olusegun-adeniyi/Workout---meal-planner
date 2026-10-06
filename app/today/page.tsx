@@ -1,37 +1,60 @@
 'use client'
 
-import { type FormEvent, type ReactNode, useEffect, useId, useMemo, useState } from 'react'
+import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react'
+import { Inter } from 'next/font/google'
 import { useRouter } from 'next/navigation'
 import { Bell, Clock3 } from 'lucide-react'
 import {
-  BottomNav,
   BottomSheet,
   Button,
   Card,
-  FloatingActionButton,
   MacroRings,
-  MealTimelineRow,
   ScreenContainer,
-  SectionHeader,
-  StreakCounter,
   TextareaField,
   TextInput,
   Toggle,
   ToastProvider,
-  WorkoutCard,
   useToast,
 } from '@/components/component-library'
+import { TodayCalendarShell } from '@/components/today/calendar-sheet'
+import { DailyTotalsCard } from '@/components/today/daily-totals-card'
+import { FoodArtwork } from '@/components/today/food-artwork'
+import {
+  AllCaughtUpCard,
+  EmptyLogsCard,
+  LogsStatusCard,
+  NextSuggestionCard,
+  SkipConfirmCard,
+  SuggestionSkeleton,
+} from '@/components/today/meal-cards'
+import { SegmentedControl } from '@/components/today/segmented-control'
+import { useDayLogs } from '@/components/today/use-day-logs'
+import { usePlanDay } from '@/components/today/use-plan-day'
+import { type TodayTab, TodayTabBar } from '@/components/today/today-tab-bar'
+import {
+  type MealListItem,
+  MealListCard,
+  RemindersCard,
+  SelectedDayBar,
+  WorkoutTodayCard,
+} from '@/components/today/today-sections'
 import { iconSize } from '@/lib/tokens'
-import { getFoodIllustrationSrc } from '@/lib/food-illustrations'
 import {
   type ProfileInputs,
+  type MealSlotId,
   type RecommendedMeal,
   getDailyRecommendation,
   getReminderPreviews,
 } from '@/lib/recommendations'
+import type { MealLog } from '@/lib/logs/schemas'
+import { toDailyRecommendation } from '@/lib/plans/plan-day'
+import { formatLondonShortDay, formatLondonTime, getLondonToday, toPlanningDate } from '@/lib/time/london'
 
-type NavTab = 'today' | 'plan' | 'progress' | 'log'
+// The Today handoff is specced in Inter; scoped to the mobile screen only.
+const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600'], display: 'swap' })
+
 type ManualLogField = 'name' | 'calories' | 'protein' | 'notes'
+type TodaySegment = 'meal' | 'workout'
 
 type Meal = RecommendedMeal
 type LoggedMeal = {
@@ -41,6 +64,7 @@ type LoggedMeal = {
   name: string
   calories: number
   protein: number
+  artwork?: MealListItem['artwork']
 }
 
 type ManualLog = {
@@ -110,149 +134,6 @@ function DesktopPanel({
   )
 }
 
-function MealIllustration({
-  slot,
-  className = '',
-}: {
-  slot: string
-  className?: string
-}) {
-  const filterId = `watercolor-${slot}-${useId().replace(/:/g, '')}`
-  const palette = {
-    breakfast: {
-      wash: '#fff4c7',
-      accent: '#d97706',
-      green: '#83c56b',
-      red: '#f97316',
-      title: 'Porridge bowl illustration',
-    },
-    brunch: {
-      wash: '#f8e8ff',
-      accent: '#7c3aed',
-      green: '#a3e635',
-      red: '#dc2626',
-      title: 'Yoghurt bowl illustration',
-    },
-    lunch: {
-      wash: '#ffe8c7',
-      accent: '#dc2626',
-      green: '#22c55e',
-      red: '#f97316',
-      title: 'Rice and chicken illustration',
-    },
-    dinner: {
-      wash: '#fde2c4',
-      accent: '#92400e',
-      green: '#65a30d',
-      red: '#dc2626',
-      title: 'Stew rice and plantain illustration',
-    },
-  }[slot] ?? {
-    wash: '#f2f2f0',
-    accent: '#9a9a98',
-    green: '#16a34a',
-    red: '#d97706',
-    title: 'Meal illustration',
-  }
-
-  return (
-    <svg
-      viewBox="0 0 220 150"
-      role="img"
-      aria-label={palette.title}
-      className={className}
-    >
-      <filter id={filterId} x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="8" />
-        <feDisplacementMap in="SourceGraphic" scale="1.4" />
-      </filter>
-      <ellipse cx="106" cy="124" rx="76" ry="13" fill="#dbeafe" opacity="0.45" filter={`url(#${filterId})`} />
-      <path
-        d="M55 93c22-32 89-37 124-11 13 10 15 24 3 32-32 20-119 21-145 2-10-8-5-17 18-23Z"
-        fill={palette.wash}
-        opacity="0.75"
-        filter={`url(#${filterId})`}
-      />
-      <path
-        d="M51 86c21-25 92-32 126-9 14 9 13 25-2 34-32 19-112 19-142 1-14-8-6-19 18-26Z"
-        fill="none"
-        stroke="#7c3f18"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.72"
-      />
-      {slot === 'breakfast' && (
-        <>
-          <ellipse cx="106" cy="78" rx="58" ry="31" fill="#fff7d6" opacity="0.9" />
-          <ellipse cx="106" cy="76" rx="44" ry="20" fill="#f8dca4" opacity="0.75" filter={`url(#${filterId})`} />
-          <path d="M78 66c18 8 34 8 57 0" fill="none" stroke={palette.accent} strokeWidth="4" strokeLinecap="round" opacity="0.55" />
-          <circle cx="137" cy="82" r="11" fill="#facc15" opacity="0.82" />
-          <path d="M131 77c8 3 12 7 14 12" fill="none" stroke="#854d0e" strokeWidth="2" opacity="0.45" />
-        </>
-      )}
-      {slot === 'brunch' && (
-        <>
-          <path d="M72 65h88l-10 45H82L72 65Z" fill="#f8fafc" stroke="#7c3f18" strokeWidth="3" opacity="0.88" />
-          <path d="M84 76c23 10 45 10 66 0l-5 24H88Z" fill="#f5d0fe" opacity="0.8" filter={`url(#${filterId})`} />
-          <circle cx="94" cy="77" r="6" fill={palette.red} opacity="0.78" />
-          <circle cx="124" cy="83" r="5" fill="#2563eb" opacity="0.7" />
-          <path d="M104 68c13 8 27 8 41 0" fill="none" stroke="#b45309" strokeWidth="4" strokeLinecap="round" opacity="0.45" />
-        </>
-      )}
-      {slot === 'lunch' && (
-        <>
-          <ellipse cx="113" cy="82" rx="57" ry="29" fill="#fff7ed" stroke="#7c3f18" strokeWidth="3" opacity="0.9" />
-          <path d="M75 82c22-12 57-14 77-1-20 18-55 21-77 1Z" fill="#f97316" opacity="0.75" filter={`url(#${filterId})`} />
-          <path d="M132 62c18 7 28 19 27 34-20 0-33-8-39-22 4-6 8-10 12-12Z" fill="#f8d9b0" stroke="#7c3f18" strokeWidth="2.5" opacity="0.9" />
-          <path d="M73 99c12-11 27-14 43-8" fill="none" stroke={palette.green} strokeWidth="7" strokeLinecap="round" opacity="0.58" />
-        </>
-      )}
-      {slot === 'dinner' && (
-        <>
-          <ellipse cx="105" cy="83" rx="58" ry="29" fill="#fff7ed" stroke="#7c3f18" strokeWidth="3" opacity="0.9" />
-          <path d="M72 78c28-15 60-13 90 2-16 23-70 29-90-2Z" fill="#b45309" opacity="0.7" filter={`url(#${filterId})`} />
-          <path d="M142 96c13-10 27-10 41-1-9 12-24 16-40 10Z" fill="#facc15" stroke="#92400e" strokeWidth="2.5" opacity="0.85" />
-          <circle cx="95" cy="76" r="7" fill={palette.red} opacity="0.65" />
-          <path d="M70 99c17 7 36 9 57 4" fill="none" stroke={palette.green} strokeWidth="5" strokeLinecap="round" opacity="0.55" />
-        </>
-      )}
-      <path
-        d="M56 91c24-20 86-27 123-8M44 107c33 20 111 22 141 2"
-        fill="none"
-        stroke="#7c3f18"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity="0.42"
-      />
-    </svg>
-  )
-}
-
-function FoodArtwork({
-  meal,
-  className = '',
-  imageClassName = '',
-}: {
-  meal: Pick<Meal, 'id' | 'name'>
-  className?: string
-  imageClassName?: string
-}) {
-  const illustrationSrc = getFoodIllustrationSrc(meal)
-
-  if (illustrationSrc) {
-    return (
-      <img
-        src={illustrationSrc}
-        alt={`Watercolor illustration of ${meal.name}`}
-        className={`object-contain ${className} ${imageClassName}`}
-      />
-    )
-  }
-
-  return <MealIllustration slot={meal.id} className={className} />
-}
-
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
   const base64 = `${base64String}${padding}`
@@ -268,13 +149,57 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray
 }
 
+type MealOverride = Pick<Meal, 'name' | 'calories' | 'protein'>
+
+function toLoggedMeals(logs: MealLog[], plannedMeals: Meal[]): LoggedMeal[] {
+  return logs
+    .filter((log) => log.status === 'eaten')
+    .map((log) => ({
+      id: log.id,
+      time: formatLondonTime(log.loggedAt),
+      slot: plannedMeals.find((meal) => meal.id === log.slot)?.slot ?? 'Manual log',
+      name: log.name,
+      calories: log.calories,
+      protein: log.protein,
+      artwork: log.slot ? { id: log.slot, name: log.name } : undefined,
+    }))
+}
+
+function toMealListItems(logs: MealLog[]): MealListItem[] {
+  return logs.map((log) => ({
+    key: log.id,
+    time: formatLondonTime(log.loggedAt),
+    name: log.name,
+    calories: log.calories,
+    protein: log.protein,
+    skipped: log.status === 'skipped',
+    artwork: log.slot ? { id: log.slot, name: log.name } : undefined,
+  }))
+}
+
+function formatMacroSummary(totals: { calories: number; protein: number }) {
+  return `${totals.calories.toLocaleString('en-GB')} cal · ${totals.protein}g protein`
+}
+
+function sumMacros(meals: { calories: number; protein: number }[]) {
+  return meals.reduce(
+    (totals, meal) => ({ calories: totals.calories + meal.calories, protein: totals.protein + meal.protein }),
+    { calories: 0, protein: 0 },
+  )
+}
+
+/** Setup problems get the actionable server message; everything else stays short. */
+function saveFailureMessage(serverMessage: string, fallback: string) {
+  return serverMessage.includes('schema.sql') ? serverMessage : fallback
+}
+
 function TodayContent() {
   const router = useRouter()
   const { toast } = useToast()
-  const [recommendation, setRecommendation] = useState(() => getDailyRecommendation())
-  const [recommendedMeals, setRecommendedMeals] = useState<Meal[]>(() => getDailyRecommendation().meals)
-  const [loggedMeals, setLoggedMeals] = useState<LoggedMeal[]>([])
-  const [streak] = useState(0)
+  // Bumped every minute so time-based meal status (due soon, past) stays current.
+  const [clockTick, setClockTick] = useState(0)
+  // Desktop swap only re-labels the planned meal; the log captures whatever was eaten.
+  const [mealOverrides, setMealOverrides] = useState<Partial<Record<MealSlotId, MealOverride>>>({})
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false)
   const [swapOpen, setSwapOpen] = useState(false)
   const [manualOpen, setManualOpen] = useState(false)
@@ -285,20 +210,35 @@ function TodayContent() {
   const [pushSavedToSupabase, setPushSavedToSupabase] = useState(false)
   const [pushBusy, setPushBusy] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false)
+  const [today, setToday] = useState(() => getLondonToday())
+  const [segment, setSegment] = useState<TodaySegment>('meal')
+  const [selectedIso, setSelectedIso] = useState(today.iso)
+  const isViewingToday = selectedIso === today.iso
+
+  const todayLogs = useDayLogs(today.iso)
+  const selectedLogs = useDayLogs(isViewingToday ? null : selectedIso)
+  const todayPlan = usePlanDay(today.iso)
+  const selectedPlan = usePlanDay(isViewingToday ? null : selectedIso)
+
+  // The stored (AI) plan drives everything; the local planner only covers a failed fetch.
+  const recommendation = useMemo(() => {
+    void clockTick
+    return todayPlan.planDay
+      ? toDailyRecommendation(todayPlan.planDay)
+      : getDailyRecommendation(readStoredProfile())
+  }, [todayPlan.planDay, clockTick])
+  const isPlanPending = todayPlan.status === 'loading' || todayPlan.status === 'generating'
+
+  // Midnight rollover: follow the new day rather than stranding the user on yesterday.
+  useEffect(() => setSelectedIso(today.iso), [today.iso])
 
   useEffect(() => {
     function refreshRecommendations() {
-      const nextRecommendation = getDailyRecommendation(readStoredProfile())
-      setRecommendation(nextRecommendation)
-      setRecommendedMeals((currentMeals) => nextRecommendation.meals.map((freshMeal) => {
-        const existingMeal = currentMeals.find((meal) => meal.id === freshMeal.id)
-
-        if (existingMeal?.status === 'eaten' || existingMeal?.status === 'skipped') {
-          return { ...freshMeal, ...existingMeal }
-        }
-
-        return freshMeal
-      }))
+      setClockTick((tick) => tick + 1)
+      setToday((current) => {
+        const fresh = getLondonToday()
+        return fresh.iso === current.iso ? current : fresh
+      })
     }
 
     refreshRecommendations()
@@ -326,6 +266,14 @@ function TodayContent() {
     return getReminderPreviews(readStoredProfile())
   }, [])
 
+  // Plan + logs → status. A logged slot is eaten/skipped regardless of the clock.
+  const recommendedMeals = useMemo<Meal[]>(() => recommendation.meals.map((meal) => {
+    const log = todayLogs.mealLogs.find((entry) => entry.slot === meal.id)
+    return { ...meal, ...mealOverrides[meal.id], status: log ? log.status : meal.status }
+  }), [recommendation.meals, todayLogs.mealLogs, mealOverrides])
+
+  const loggedMeals = useMemo<LoggedMeal[]>(() => toLoggedMeals(todayLogs.mealLogs, recommendation.meals), [todayLogs.mealLogs, recommendation.meals])
+
   const activeRecommendedMeals = useMemo(() => {
     return recommendedMeals.filter((meal) => meal.status === 'due-soon' || meal.status === 'upcoming')
   }, [recommendedMeals])
@@ -335,81 +283,43 @@ function TodayContent() {
       ?? activeRecommendedMeals.find((meal) => meal.status === 'upcoming')
   }, [activeRecommendedMeals])
 
-  const eatenTotals = useMemo(() => {
-    return loggedMeals.reduce(
-      (totals, meal) => {
-        return {
-          calories: totals.calories + meal.calories,
-          protein: totals.protein + meal.protein,
-        }
-      },
-      { calories: 0, protein: 0 },
-    )
-  }, [loggedMeals])
+  const eatenTotals = useMemo(() => sumMacros(loggedMeals), [loggedMeals])
+
+  async function recordPlannedMeal(meal: Meal, status: 'eaten' | 'skipped') {
+    const result = await todayLogs.logMeal({
+      source: 'planned',
+      date: today.iso,
+      slot: meal.id,
+      status,
+      name: meal.name,
+      calories: meal.calories,
+      protein: meal.protein,
+    })
+    if (!result.ok) toast({ message: saveFailureMessage(result.message, `${meal.slot} not saved. Try again.`), type: 'error' })
+  }
 
   function logMeal() {
     if (!nextMeal) return
-
-    setRecommendedMeals((currentMeals) => {
-      let promotedNext = false
-      return currentMeals.map((meal) => {
-        if (meal.id === nextMeal.id) {
-          return { ...meal, status: 'eaten' }
-        }
-        if (!promotedNext && meal.status === 'upcoming') {
-          promotedNext = true
-          return { ...meal, status: 'due-soon' }
-        }
-        return meal
-      })
-    })
-    setLoggedMeals((currentMeals) => [
-      ...currentMeals,
-      {
-        id: `log-${nextMeal.id}-${Date.now()}`,
-        time: nextMeal.time,
-        slot: nextMeal.slot,
-        name: nextMeal.name,
-        calories: nextMeal.calories,
-        protein: nextMeal.protein,
-      },
-    ])
     toast({ message: `${nextMeal.slot} logged`, type: 'success' })
+    void recordPlannedMeal(nextMeal, 'eaten')
   }
 
   function skipMeal() {
     if (!nextMeal) return
-
-    setRecommendedMeals((currentMeals) => {
-      let promotedNext = false
-      return currentMeals.map((meal) => {
-        if (meal.id === nextMeal.id) {
-          return { ...meal, status: 'skipped' }
-        }
-        if (!promotedNext && meal.status === 'upcoming') {
-          promotedNext = true
-          return { ...meal, status: 'due-soon' }
-        }
-        return meal
-      })
-    })
     setSkipConfirmOpen(false)
     toast({ message: `${nextMeal.slot} skipped`, type: 'neutral' })
+    void recordPlannedMeal(nextMeal, 'skipped')
+  }
+
+  async function completeWorkout() {
+    toast({ message: 'Workout logged', type: 'success' })
+    const result = await todayLogs.logWorkout({ date: today.iso, splitLabel: recommendation.workout.splitLabel })
+    if (!result.ok) toast({ message: saveFailureMessage(result.message, 'Workout not saved. Try again.'), type: 'error' })
   }
 
   function swapMeal(replacement: (typeof swaps)[number]) {
     if (!nextMeal) return
-
-    setRecommendedMeals((currentMeals) => currentMeals.map((meal) => (
-      meal.id === nextMeal.id
-        ? {
-            ...meal,
-            name: replacement.name,
-            calories: replacement.calories,
-            protein: replacement.protein,
-          }
-        : meal
-    )))
+    setMealOverrides((current) => ({ ...current, [nextMeal.id]: replacement }))
     setSwapOpen(false)
     toast({ message: 'Meal swapped', type: 'success' })
   }
@@ -419,7 +329,7 @@ function TodayContent() {
     setManualErrors((current) => ({ ...current, [field]: undefined }))
   }
 
-  function submitManualLog(event: FormEvent<HTMLFormElement>) {
+  async function submitManualLog(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const name = manualLog.name.trim()
@@ -436,20 +346,27 @@ function TodayContent() {
       return
     }
 
-    const customMeal: LoggedMeal = {
-      id: `custom-${Date.now()}`,
-      time: 'Now',
-      slot: 'Manual log',
-      name,
-      calories: Math.round(calories),
-      protein: Math.round(protein),
-    }
-
-    setLoggedMeals((currentMeals) => [...currentMeals, customMeal])
-    setManualLog(emptyManualLog)
+    const notes = manualLog.notes.trim()
     setManualErrors({})
     setManualOpen(false)
     toast({ message: 'Meal logged', type: 'success' })
+
+    const result = await todayLogs.logMeal({
+      source: 'custom_text',
+      date: today.iso,
+      name,
+      calories,
+      protein,
+      notes: notes || undefined,
+    })
+
+    if (result.ok) {
+      setManualLog(emptyManualLog)
+    } else {
+      // Reopen with what they typed so nothing is lost.
+      setManualOpen(true)
+      toast({ message: saveFailureMessage(result.message, 'Meal not saved. Try again.'), type: 'error' })
+    }
   }
 
   async function enablePushReminders() {
@@ -569,272 +486,210 @@ function TodayContent() {
     }
   }
 
-  function handleNav(tab: NavTab) {
+  function handleNav(tab: TodayTab) {
     if (tab === 'today') return
     if (tab === 'plan') {
       router.push('/plan')
       return
     }
-    if (tab === 'log') {
-      setManualOpen(true)
-      return
-    }
-    toast({ message: `${tab[0].toUpperCase()}${tab.slice(1)} is next`, type: 'neutral' })
+    toast({ message: 'Progress is next', type: 'neutral' })
   }
 
-  return (
-    <ScreenContainer className="lg:bg-[var(--color-surface-default)] lg:px-0">
-      <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-6 pb-8 pt-5 lg:hidden">
-        <header className="flex items-end justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
-              {recommendation.dateLabel}
-            </p>
-            <h1 className="text-[32px] font-bold leading-[36px] text-[var(--color-text-primary)]">
-              Today
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Push reminders"
-              onClick={() => setNotificationOpen((open) => !open)}
-              className="group relative flex h-10 w-10 items-center justify-center rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
-            >
-              <Bell size={iconSize.md} aria-hidden="true" />
-              <span className="pointer-events-none absolute right-0 top-12 z-30 w-[220px] rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-surface-default)] px-3 py-2 text-left text-[13px] leading-[18px] text-[var(--color-text-secondary)] opacity-0 shadow-[0_4px_12px_rgba(0,0,0,0.10)] transition-opacity group-hover:opacity-100">
-                {pushSubscribed ? 'Meal-time reminders are enabled.' : 'Meal-time reminders are off. Click to manage notifications.'}
-              </span>
-            </button>
-            <StreakCounter days={streak} />
-          </div>
-        </header>
+  function togglePushReminders(checked: boolean) {
+    if (pushBusy) return
+    if (checked) {
+      enablePushReminders()
+    } else {
+      disablePushReminders()
+    }
+  }
 
-        {notificationOpen && (
-          <Card className="flex flex-col gap-4 p-4">
-            <div>
-              <Toggle
-                checked={pushSubscribed}
-                onChange={(checked) => {
-                  if (pushBusy) return
-                  if (checked) {
-                    enablePushReminders()
-                  } else {
-                    disablePushReminders()
-                  }
-                }}
-                label="Meal-time push notifications"
-              />
-              <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
-                {notificationPermission === 'granted'
-                  ? pushSavedToSupabase
-                    ? 'Forge can remind you when a meal is due.'
-                    : 'This browser can receive test reminders. Supabase is still needed for automatic reminders.'
-                  : 'Your browser will ask for permission before reminders are enabled.'}
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              loading={pushBusy}
-              disabled={!pushSubscribed}
-              onClick={sendTestPush}
-            >
-              Send test reminder
-            </Button>
-          </Card>
-        )}
+  const pushDescription = notificationPermission === 'granted'
+    ? pushSavedToSupabase
+      ? 'Forge can remind you when a meal is due.'
+      : 'This browser can receive test reminders. Supabase is still needed for automatic reminders.'
+    : 'Your browser will ask for permission before reminders are enabled.'
 
-        <section>
-          {skipConfirmOpen && nextMeal ? (
-            <Card className="relative min-h-[220px] overflow-hidden p-4">
-              <FoodArtwork meal={nextMeal} className="pointer-events-none absolute -bottom-6 -right-9 h-36 w-48 opacity-95" />
-              <div className="relative max-w-[70%]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-secondary)]">
-                  Skip this meal?
-                </p>
-                <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
-                  {nextMeal.name}
-                </h2>
-                <p className="mt-2 text-[15px] text-[var(--color-text-secondary)]">
-                  {nextMeal.calories} cal · {nextMeal.protein}g protein
-                </p>
-              </div>
-              <div className="relative mt-8 flex gap-2">
-                <Button variant="destructive" onClick={skipMeal}>Confirm skip</Button>
-                <Button variant="secondary" onClick={() => setSkipConfirmOpen(false)}>Keep it</Button>
-              </div>
-            </Card>
-          ) : nextMeal ? (
-            <Card className="relative min-h-[300px] overflow-hidden p-4">
-              <FoodArtwork meal={nextMeal} className="pointer-events-none absolute -bottom-7 -right-10 h-44 w-56 opacity-95" />
-              <div className="relative max-w-[72%]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
-                  Next up
-                </p>
-                <p className="mt-8 text-[15px] text-[var(--color-text-secondary)]">
-                  {nextMeal.status === 'due-soon' ? 'Eat in 23 min' : `Eat at ${nextMeal.time}`}
-                </p>
-                <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
-                  {nextMeal.name}
-                </h2>
-                <p className="mt-2 text-[15px] leading-[20px] text-[var(--color-text-secondary)]">
-                  {nextMeal.calories} cal · {nextMeal.protein}g protein
-                </p>
-              </div>
-              <div className="relative mt-8 flex gap-2">
-                <Button className="min-w-[120px]" onClick={logMeal}>Ate it</Button>
-                <Button variant="secondary" onClick={() => setSwapOpen(true)}>Swap</Button>
-                <Button variant="ghost" onClick={() => setSkipConfirmOpen(true)}>Skip</Button>
-              </div>
-            </Card>
-          ) : (
-            <Card className="flex min-h-[180px] flex-col justify-center p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.6px] text-[var(--color-text-tertiary)]">
-                Next up
-              </p>
-              <h2 className="mt-2 text-[24px] font-medium leading-[28px] text-[var(--color-text-primary)]">
-                You are up to date
-              </h2>
-              <p className="mt-2 text-[15px] leading-[20px] text-[var(--color-text-secondary)]">
-                {eatenTotals.calories} cal · {eatenTotals.protein}g protein logged today
-              </p>
-            </Card>
-          )}
-          <button
-            type="button"
-            onClick={() => setManualOpen(true)}
-            className="mt-3 flex min-h-11 w-full items-center justify-center rounded-[var(--radius-md)] text-[15px] font-semibold text-[var(--color-text-accent)] transition-colors hover:bg-[var(--color-action-primary-subtle)]"
-          >
-            Ate something else
-          </button>
-        </section>
+  const laterMeals: MealListItem[] = activeRecommendedMeals
+    .filter((meal) => meal.id !== nextMeal?.id)
+    .map((meal) => ({
+      key: meal.id,
+      time: meal.time,
+      name: meal.name,
+      calories: meal.calories,
+      protein: meal.protein,
+      artwork: { id: meal.id, name: meal.name },
+    }))
 
-        <section className="flex flex-col gap-2">
-          <SectionHeader title="Nutrition" />
-          <Card className="overflow-hidden bg-[url('/images/desktop-background.png')] bg-cover bg-center p-4">
-            <div className="rounded-[var(--radius-lg)] bg-white/80 p-4 backdrop-blur-[2px]">
-              <MacroRings
-                calories={eatenTotals.calories}
-                calorieTarget={recommendation.calorieTarget}
-                protein={eatenTotals.protein}
-                proteinTarget={recommendation.proteinTarget}
-                className="border-0 bg-transparent p-0"
-              />
-            </div>
-          </Card>
-        </section>
+  const selectedDay = useMemo(() => {
+    if (isViewingToday) return null
+    return selectedPlan.planDay
+      ? toDailyRecommendation(selectedPlan.planDay)
+      : getDailyRecommendation(readStoredProfile(), toPlanningDate(selectedIso))
+  }, [isViewingToday, selectedIso, selectedPlan.planDay])
+  const isSelectedPlanPending = selectedPlan.status === 'loading' || selectedPlan.status === 'generating'
 
-        <section className="flex flex-col gap-2">
-          <SectionHeader title="Meal recommendations" />
-          <Card variant="list">
-            {activeRecommendedMeals.length > 0 ? (
-              activeRecommendedMeals.map((meal, index) => (
-                <div
-                  key={meal.id}
-                  className={`grid grid-cols-[44px_58px_1fr] items-center gap-3 px-4 py-3 ${
-                    index !== activeRecommendedMeals.length - 1 ? 'border-b border-[var(--color-border-divider)]' : ''
-                  }`}
-                >
-                  <p className="text-[13px] text-[var(--color-text-tertiary)]">{meal.time}</p>
-                  <FoodArtwork meal={meal} className="h-12 w-14" />
-                  <div className="min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="min-w-0 truncate text-[17px] font-medium leading-[22px] text-[var(--color-text-primary)]">
-                        {meal.name}
-                      </p>
-                      <span className="flex-none rounded-[var(--radius-full)] bg-[var(--color-bg-secondary)] px-2.5 py-1 text-[11px] font-medium capitalize text-[var(--color-text-secondary)]">
-                        {meal.status.replace('-', ' ')}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
-                      {meal.calories} cal · {meal.protein}g protein
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="px-4 py-6">
-                <p className="text-[15px] font-medium text-[var(--color-text-primary)]">No remaining meals today</p>
-                <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">Tomorrow&apos;s recommendations will refresh automatically.</p>
-              </div>
-            )}
-          </Card>
-        </section>
+  const selectedDayMeals: MealListItem[] = (selectedDay?.meals ?? []).map((meal) => ({
+    key: meal.id,
+    time: meal.time,
+    name: meal.name,
+    calories: meal.calories,
+    protein: meal.protein,
+    artwork: { id: meal.id, name: meal.name },
+  }))
+  const selectedDayTotals = sumMacros(selectedDayMeals)
+  const isPastSelection = selectedIso < today.iso
 
-        {loggedMeals.length > 0 && (
-          <section className="flex flex-col gap-2">
-            <SectionHeader title="Meals logged" />
-            <Card variant="list">
-              {loggedMeals.map((meal, index) => (
-                <MealTimelineRow
-                  key={meal.id}
-                  time={meal.time}
-                  slot={meal.slot}
-                  mealName={meal.name}
-                  calories={meal.calories}
-                  protein={meal.protein}
-                  status="eaten"
-                  isLast={index === loggedMeals.length - 1}
-                />
-              ))}
-            </Card>
-          </section>
-        )}
+  const visibleLogs = isViewingToday ? todayLogs : selectedLogs
+  const workoutCompletedTime = visibleLogs.workoutLog ? formatLondonTime(visibleLogs.workoutLog.completedAt) : null
 
-        <section className="flex flex-col gap-2">
-          <SectionHeader title="Training" />
-          <WorkoutCard
-            splitLabel={recommendation.workout.splitLabel}
-            muscleGroups={recommendation.workout.muscleGroups}
-            exerciseCount={recommendation.workout.exerciseCount}
-            estimatedMinutes={recommendation.workout.estimatedMinutes}
-            exercises={recommendation.workout.exercises}
-            status={recommendation.workout.status}
-            onComplete={() => toast({ message: 'Workout logged', type: 'success' })}
+  function renderLogsProblem(logs: typeof todayLogs) {
+    if (logs.status === 'setup-required') {
+      return (
+        <LogsStatusCard
+          title="Logging isn't connected yet"
+          body="Run supabase/schema.sql in the Supabase SQL editor, then try again."
+          onRetry={() => logs.reload()}
+        />
+      )
+    }
+    return (
+      <LogsStatusCard
+        title="Couldn't load your logs"
+        body="Check your connection and try again."
+        onRetry={() => logs.reload()}
+      />
+    )
+  }
+
+  const todayMealContent = (
+    <>
+      {(todayLogs.status === 'error' || todayLogs.status === 'setup-required') && renderLogsProblem(todayLogs)}
+
+      {isPlanPending ? (
+        <SuggestionSkeleton caption={todayPlan.status === 'generating' ? "Planning this week's meals…" : undefined} />
+      ) : todayLogs.status === 'loading' ? (
+        <SuggestionSkeleton />
+      ) : skipConfirmOpen && nextMeal ? (
+        <SkipConfirmCard meal={nextMeal} onConfirm={skipMeal} onCancel={() => setSkipConfirmOpen(false)} />
+      ) : nextMeal ? (
+        <NextSuggestionCard meal={nextMeal} onAte={logMeal} onSkip={() => setSkipConfirmOpen(true)} />
+      ) : (
+        <AllCaughtUpCard calories={eatenTotals.calories} protein={eatenTotals.protein} />
+      )}
+
+      {/* Unknown isn't zero: hide totals when logs couldn't load. */}
+      {(todayLogs.status === 'loading' || todayLogs.status === 'ready') && (
+        <DailyTotalsCard
+          calories={eatenTotals.calories}
+          calorieTarget={recommendation.calorieTarget}
+          protein={eatenTotals.protein}
+          proteinTarget={recommendation.proteinTarget}
+          loading={todayLogs.status === 'loading' || isPlanPending}
+        />
+      )}
+
+      <button
+        type="button"
+        onClick={() => setManualOpen(true)}
+        className="flex min-h-11 items-center justify-center text-[14px] font-medium leading-5 text-[var(--today-info)]"
+      >
+        Ate something else
+      </button>
+
+      {!isPlanPending && laterMeals.length > 0 && <MealListCard title="Later today" items={laterMeals} />}
+      {todayLogs.mealLogs.length > 0 && (
+        <MealListCard title="Logged" items={toMealListItems(todayLogs.mealLogs)} />
+      )}
+
+      <RemindersCard
+        enabled={pushSubscribed}
+        busy={pushBusy}
+        description={pushDescription}
+        onToggle={togglePushReminders}
+        onSendTest={sendTestPush}
+      />
+    </>
+  )
+
+  const otherDayMealContent = (
+    <>
+      {isPastSelection && (
+        selectedLogs.status === 'loading' ? (
+          <SuggestionSkeleton />
+        ) : selectedLogs.status === 'error' || selectedLogs.status === 'setup-required' ? (
+          renderLogsProblem(selectedLogs)
+        ) : selectedLogs.mealLogs.length > 0 ? (
+          <MealListCard
+            title="Logged"
+            subtitle={formatMacroSummary(sumMacros(selectedLogs.mealLogs.filter((log) => log.status === 'eaten')))}
+            items={toMealListItems(selectedLogs.mealLogs)}
           />
-        </section>
+        ) : (
+          <EmptyLogsCard />
+        )
+      )}
+      {isSelectedPlanPending ? (
+        <SuggestionSkeleton caption={selectedPlan.status === 'generating' ? "Planning this week's meals…" : undefined} />
+      ) : (
+        <MealListCard
+          title={isPastSelection ? 'Planned' : 'Meals'}
+          subtitle={formatMacroSummary(selectedDayTotals)}
+          items={selectedDayMeals}
+        />
+      )}
+    </>
+  )
 
-        <section className="flex flex-col gap-2">
-          <SectionHeader title="Reminder previews" />
-          <Card variant="list">
-            {reminderPreviews.map((reminder, index) => {
-              const Icon = reminder.tone === 'due' ? Bell : Clock3
+  const mobileContent = (
+    <div className="flex flex-col gap-4 pl-[18px] pr-[17px] pt-1.5" style={{ paddingBottom: 'calc(130px + env(safe-area-inset-bottom))' }}>
+      <SegmentedControl
+        label="Today view"
+        options={[{ id: 'meal', label: 'Meal' }, { id: 'workout', label: 'Workout' }]}
+        value={segment}
+        onChange={setSegment}
+      />
 
-              return (
-                <div
-                  key={reminder.id}
-                  className={`flex gap-3 px-4 py-3 ${
-                    index !== reminderPreviews.length - 1 ? 'border-b border-[var(--color-border-divider)]' : ''
-                  }`}
-                >
-                  <div className={`flex h-9 w-9 flex-none items-center justify-center rounded-[var(--radius-full)] ${reminderAccent(reminder.tone)}`}>
-                    <Icon size={iconSize.sm} aria-hidden="true" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="truncate text-[13px] font-medium text-[var(--color-text-secondary)]">
-                        {reminder.label}
-                      </p>
-                      <p className="text-[13px] text-[var(--color-text-tertiary)]">
-                        {reminder.time}
-                      </p>
-                    </div>
-                    <p className="mt-1 text-[17px] font-semibold leading-[22px] text-[var(--color-text-primary)]">
-                      {reminder.title}
-                    </p>
-                    <p className="mt-1 text-[13px] leading-[18px] text-[var(--color-text-secondary)]">
-                      {reminder.body}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </Card>
-        </section>
+      {selectedDay && (
+        <SelectedDayBar
+          label={formatLondonShortDay(selectedIso)}
+          isPast={isPastSelection}
+          onBackToToday={() => setSelectedIso(today.iso)}
+        />
+      )}
+
+      {segment === 'workout' ? (
+        <WorkoutTodayCard
+          workout={selectedDay?.workout ?? recommendation.workout}
+          completedTime={workoutCompletedTime}
+          onComplete={isViewingToday ? completeWorkout : undefined}
+        />
+      ) : selectedDay ? (
+        otherDayMealContent
+      ) : (
+        todayMealContent
+      )}
+    </div>
+  )
+
+  return (
+    <>
+      <div className={`${inter.className} fixed inset-0 bg-[var(--today-surface)] lg:hidden`}>
+        <div className="mx-auto h-full max-w-[430px]">
+          <TodayCalendarShell
+            today={today}
+            selectedIso={selectedIso}
+            onSelectDate={setSelectedIso}
+            streakDays={todayLogs.status === 'ready' ? todayLogs.streak : null}
+            footer={<TodayTabBar active="today" onChange={handleNav} />}
+          >
+            {mobileContent}
+          </TodayCalendarShell>
+        </div>
       </div>
 
+      <div className="hidden lg:block">
+      <ScreenContainer className="lg:bg-[var(--color-surface-default)] lg:px-0">
       <div className="hidden min-h-screen w-full bg-[var(--color-surface-default)] px-5 pb-10 pt-5 text-[var(--color-text-primary)] lg:block">
         <header className="relative mb-6 flex items-center justify-between">
           <div className="flex items-center gap-5">
@@ -1075,6 +930,9 @@ function TodayContent() {
         </nav>
       </div>
 
+      </ScreenContainer>
+      </div>
+
       <BottomSheet open={manualOpen} onClose={() => setManualOpen(false)} title="Log what you ate">
         <form className="flex flex-col gap-4 pb-4" onSubmit={submitManualLog}>
           <TextInput
@@ -1126,14 +984,7 @@ function TodayContent() {
         </div>
       </BottomSheet>
 
-      <div className="lg:hidden">
-        <FloatingActionButton
-          label="Log something"
-          onClick={() => setManualOpen(true)}
-        />
-        <BottomNav active="today" onChange={handleNav} />
-      </div>
-    </ScreenContainer>
+    </>
   )
 }
 

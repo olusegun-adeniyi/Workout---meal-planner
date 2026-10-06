@@ -111,6 +111,69 @@ export type Database = {
         }
         Relationships: []
       }
+      meal_logs: {
+        Row: {
+          id: string
+          log_date: string
+          slot: 'breakfast' | 'brunch' | 'lunch' | 'dinner' | null
+          status: 'eaten' | 'skipped'
+          source: 'planned' | 'custom_text'
+          name: string
+          calories: number
+          protein_g: number
+          notes: string | null
+          logged_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          log_date: string
+          slot?: 'breakfast' | 'brunch' | 'lunch' | 'dinner' | null
+          status: 'eaten' | 'skipped'
+          source: 'planned' | 'custom_text'
+          name: string
+          calories: number
+          protein_g: number
+          notes?: string | null
+          logged_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          log_date?: string
+          slot?: 'breakfast' | 'brunch' | 'lunch' | 'dinner' | null
+          status?: 'eaten' | 'skipped'
+          source?: 'planned' | 'custom_text'
+          name?: string
+          calories?: number
+          protein_g?: number
+          notes?: string | null
+          logged_at?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      workout_logs: {
+        Row: {
+          id: string
+          log_date: string
+          split_label: string
+          completed_at: string
+        }
+        Insert: {
+          id?: string
+          log_date: string
+          split_label: string
+          completed_at?: string
+        }
+        Update: {
+          id?: string
+          log_date?: string
+          split_label?: string
+          completed_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

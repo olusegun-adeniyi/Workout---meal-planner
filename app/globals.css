@@ -69,6 +69,32 @@
   --radius-xl:   12px;
   --radius-pill: 100px;
   --radius-full: 9999px;
+
+  /* Today screen (design_handoff_today_calendar) */
+  --today-text-primary:    #282828;
+  --today-text-secondary:  #636363;
+  --today-text-tertiary:   #9a9a9a;
+  --today-text-inactive:   #777777;
+  --today-text-segment:    #323232;
+  --today-text-value:      #000000;
+  --today-surface:         #ffffff;
+  --today-cell:            #f9f9f9;
+  --today-segment-track:   #f3f3f3;
+  --today-border:          #eeeeee;
+  --today-border-button:   #eaeaea;
+  --today-border-sheet:    #f4f4f4;
+  --today-handle:          #dedede;
+  --today-gauge-track:     #dcdcdc;
+  --today-gauge-calories:  #99df00;
+  --today-gauge-protein:   #ffae00;
+  --today-brand:           #00aeff;
+  --today-info:            #0070a4;
+  --today-info-bg:         #f0faff;
+  --today-icon-accent:     #ff5900;
+  --today-date-selected:   #e07b00;
+  --today-food-tile:       #fbefe6;
+  --today-button-primary:  #333333;
+  --today-button-primary-pressed: #282828;
 }
 
 /* ── Base resets ── */
