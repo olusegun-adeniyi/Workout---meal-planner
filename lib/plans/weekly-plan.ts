@@ -1,4 +1,6 @@
+import { after } from 'next/server'
 import { generateWeeklyPlanWithAi } from '@/lib/ai/generate-weekly-plan'
+import { illustratedMealNames } from '@/lib/ai/schemas'
 import { SetupRequiredError } from '@/lib/db/queries/errors'
 import { getActiveProfile } from '@/lib/db/queries/profile'
 import { type StoredWeek, getWeeklyPlan, saveWeeklyPlan } from '@/lib/db/queries/weekly-plans'
@@ -9,7 +11,7 @@ import {
   getWeeklyRecommendation,
 } from '@/lib/recommendations'
 import { getLondonToday, getWeekStartIso, toPlanningDate } from '@/lib/time/london'
-import type { PlanDay } from './plan-day'
+import type { MealSlotLabel, PlanDay, PlanWeek } from './plan-day'
 
 // Server-only. Generation takes ~30s, so concurrent requests for the same week
 // share one promise. If weekly_plans doesn't exist yet, plans live in memory
@@ -92,23 +94,75 @@ function generateOnce(weekStarting: string, profile: ProfileInputs) {
   return promise
 }
 
+const FALLBACK_RETRY_MS = 6 * 60 * 60 * 1000
+
 /**
- * The plan for one day. Only the current week is generated on demand — browsing
- * a far-off date in the calendar shouldn't trigger an AI call.
+ * Only the current week is generated on demand — browsing a far-off date
+ * shouldn't trigger an AI call. A current week stored as the local fallback
+ * (the AI was down) is served as-is and upgraded in the background, at most
+ * every few hours.
  */
+async function resolveWeek(weekStarting: string, profile: ProfileInputs) {
+  const isCurrentWeek = weekStarting === getWeekStartIso(getLondonToday().iso)
+  const stored = await readStored(weekStarting)
+
+  if (stored) {
+    const age = stored.updatedAt ? Date.now() - new Date(stored.updatedAt).getTime() : 0
+    if (isCurrentWeek && stored.source === 'fallback' && age > FALLBACK_RETRY_MS) {
+      after(() => generateOnce(weekStarting, profile).catch((error) => console.error('Fallback upgrade failed', error)))
+    }
+    return stored
+  }
+  return isCurrentWeek ? generateOnce(weekStarting, profile) : buildFallbackWeek(profile, weekStarting)
+}
+
 export async function getPlanDay(date: string): Promise<PlanDay> {
   const profile = await getActiveProfile()
-  const targets = getTargets(profile)
   const weekStarting = getWeekStartIso(date)
-  const isCurrentWeek = weekStarting === getWeekStartIso(getLondonToday().iso)
-
-  const week = (await readStored(weekStarting))
-    ?? (isCurrentWeek ? await generateOnce(weekStarting, profile) : buildFallbackWeek(profile, weekStarting))
+  const week = await resolveWeek(weekStarting, profile)
 
   const day = week.days.find((candidate) => candidate.id === date)
     ?? buildFallbackWeek(profile, weekStarting).days.find((candidate) => candidate.id === date)
   if (!day) throw new Error(`No plan day for ${date}`)
 
-  return { date, source: week.source, ...targets, day }
+  return { date, source: week.source, ...getTargets(profile), day }
 }
 
+export async function getPlanWeek(date: string): Promise<PlanWeek> {
+  const profile = await getActiveProfile()
+  const weekStarting = getWeekStartIso(date)
+  const week = await resolveWeek(weekStarting, profile)
+  return { weekStarting, source: week.source, ...getTargets(profile), days: week.days }
+}
+
+export class InvalidSwapError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'InvalidSwapError'
+  }
+}
+
+/**
+ * Replaces one planned meal by name. The slot keeps its planned calories and
+ * protein — the portion scales — so the day's totals still hit target. A week
+ * that only existed as a fallback is stored first so the swap sticks.
+ */
+export async function swapPlannedMeal({ date, slot, name }: { date: string; slot: MealSlotLabel; name: string }) {
+  if (!(illustratedMealNames as readonly string[]).includes(name)) {
+    throw new InvalidSwapError('Pick one of the suggested meals.')
+  }
+  const profile = await getActiveProfile()
+  const weekStarting = getWeekStartIso(date)
+  const week = await resolveWeek(weekStarting, profile)
+
+  const day = week.days.find((candidate) => candidate.id === date)
+  const meal = day?.meals.find((candidate) => candidate.slot === slot)
+  if (!day || !meal) throw new InvalidSwapError(`No ${slot.toLowerCase()} planned on ${date}.`)
+
+  const swappedDay = { ...day, meals: day.meals.map((entry) => (entry.slot === slot ? { ...entry, name } : entry)) }
+  await store(weekStarting, {
+    ...week,
+    days: week.days.map((candidate) => (candidate.id === date ? swappedDay : candidate)),
+  })
+  return swappedDay
+}

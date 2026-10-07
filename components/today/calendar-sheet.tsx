@@ -24,7 +24,6 @@ type TodayCalendarShellProps = {
   onSelectDate: (iso: string) => void
   /** null while logs load — the badge shouldn't flash a wrong "0". */
   streakDays: number | null
-  footer: ReactNode
   children: ReactNode
 }
 
@@ -37,7 +36,6 @@ export function TodayCalendarShell({
   selectedIso,
   onSelectDate,
   streakDays,
-  footer,
   children,
 }: TodayCalendarShellProps) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -223,12 +221,11 @@ export function TodayCalendarShell({
 
       <div
         className="absolute inset-x-0 bottom-0 z-[1] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{ top: `calc(${SAFE_TOP} + ${sheet.height + 16}px)` }}
+        style={{ top: `calc(${SAFE_TOP} + ${sheet.height}px)` }}
       >
         {children}
       </div>
 
-      {footer}
     </div>
   )
 }

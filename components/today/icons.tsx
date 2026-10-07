@@ -84,3 +84,32 @@ export function HomeIcon(props: IconProps) {
     </svg>
   )
 }
+
+export function SwapIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...base(props)}>
+      <path fill="currentColor" d="M20 15.5a1 1 0 1 0 2 0zM3.418 12.706a1 1 0 1 0 1.911.588L4.373 13zm7.035.237a1 1 0 1 0-.348-1.97l.174.985zM4.37 13l-.985.174a1 1 0 0 0 1.159.81zm-.057-6.082a1 1 0 1 0-1.970.347l.985-.174zM12.5 7v1a7.5 7.5 0 0 1 7.5 7.5h2A9.5 9.5 0 0 0 12.5 6zm-8.127 6l.956.294A7.5 7.5 0 0 1 12.5 8V6a9.5 9.5 0 0 0-9.081 6.706zm5.906-1.042l-.174-.985l-5.909 1.042l.174.985l.174.985l5.909-1.042zM4.37 13l.985-.174l-1.042-5.908l-.985.173l-.985.174l1.042 5.909z" />
+    </svg>
+  )
+}
+
+export function PlusIcon(props: IconProps) {
+  return <StrokeIcon d="M12 5v14m-7-7h14" {...props} />
+}
+
+export function CameraIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...base(props)}>
+      <path fill="currentColor" d="M12 11a2 2 0 1 0 0 4a2 2 0 1 0 0-4" />
+      <path fill="currentColor" d="M20 5h-3l-2.32-1.790a.98.98 0 0 0-.61-.21H9.930c-.22 0-.44.07-.61.21L7 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m-8 12c-2.17 0-4-1.830-4-4s1.830-4 4-4s4 1.830 4 4s-1.830 4-4 4m7-8c-.55 0-1-.45-1-1s.45-1 1-1s1 .45 1 1s-.45 1-1 1" />
+    </svg>
+  )
+}
+
+export function EditIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...base(props)}>
+      <path fill="currentColor" d="m18.777 16.468l-4.243 4.243a1 1 0 0 1-.707.293H11a1 1 0 0 1-1-1v-2.830c0-.264.106-.519.293-.706l4.242-4.242zM17 2a2 2 0 0 1 2 2v4.020a5 5 0 0 0-4.466 1.377l-5.656 5.657a3 3 0 0 0-.879 2.120v2.830c0 .343.062.679.174.996H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm-1.052 8.812a3 3 0 0 1 4.243 4.242zM7 6a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2z" />
+    </svg>
+  )
+}

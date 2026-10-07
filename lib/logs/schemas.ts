@@ -21,7 +21,8 @@ export const MealLogInputSchema = z.discriminatedUnion('source', [
     protein: macro,
   }),
   z.object({
-    source: z.literal('custom_text'),
+    // A typed meal, or one estimated from a photo and confirmed by the user.
+    source: z.enum(['custom_text', 'custom_photo']),
     date: IsoDateSchema,
     name: z.string().trim().min(1).max(200),
     calories: macro,
@@ -36,7 +37,7 @@ export const MealLogSchema = z.object({
   date: IsoDateSchema,
   slot: MealSlotSchema.nullable(),
   status: z.enum(['eaten', 'skipped']),
-  source: z.enum(['planned', 'custom_text']),
+  source: z.enum(['planned', 'custom_text', 'custom_photo']),
   name: z.string(),
   calories: z.number().int(),
   protein: z.number().int(),

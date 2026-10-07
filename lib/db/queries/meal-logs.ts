@@ -4,7 +4,7 @@ import { type DayMealCounts, calculateStreak } from '@/lib/logs/streak'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/types'
 import { addDaysToIso } from '@/lib/time/london'
-import { throwIfMissingTable } from './errors'
+import { SetupRequiredError, throwIfMissingTable } from './errors'
 
 type MealLogRow = Database['public']['Tables']['meal_logs']['Row']
 
@@ -67,7 +67,7 @@ export async function saveMealLog(input: MealLogInput): Promise<MealLog> {
         log_date: parsed.date,
         slot: null,
         status: 'eaten',
-        source: 'custom_text',
+        source: parsed.source,
         name: parsed.name,
         calories: parsed.calories,
         protein_g: parsed.protein,
@@ -78,6 +78,10 @@ export async function saveMealLog(input: MealLogInput): Promise<MealLog> {
   const { data, error } = await query.select('*').single()
   if (error) {
     throwIfMissingTable(error, 'meal_logs')
+    // The custom_photo source arrives with a schema update; an old constraint rejects it.
+    if (error.code === '23514' && error.message.includes('meal_logs_source_check')) {
+      throw new SetupRequiredError('meal_logs (photo logging)')
+    }
     throw error
   }
   return toMealLog(data)

@@ -20,6 +20,24 @@ export const PlanDaySchema = z.object({
 })
 export type PlanDay = z.infer<typeof PlanDaySchema>
 
+export const PlanWeekSchema = z.object({
+  weekStarting: IsoDateSchema,
+  source: z.enum(['ai', 'fallback']),
+  calorieTarget: z.number().int(),
+  proteinTarget: z.number().int(),
+  days: z.array(AiPlanDaySchema).length(7),
+})
+export type PlanWeek = z.infer<typeof PlanWeekSchema>
+export type PlannedDay = PlanWeek['days'][number]
+export type MealSlotLabel = PlannedDay['meals'][number]['slot']
+
+export const SwapMealInputSchema = z.object({
+  date: IsoDateSchema,
+  slot: z.enum(['Breakfast', 'Brunch', 'Lunch', 'Dinner']),
+  name: z.string().trim().min(1).max(200),
+})
+export type SwapMealInput = z.infer<typeof SwapMealInputSchema>
+
 /** Turns a stored plan day into the shape the Today UI renders; status is time-based. */
 export function toDailyRecommendation(planDay: PlanDay, now?: Date): DailyRecommendation {
   return {

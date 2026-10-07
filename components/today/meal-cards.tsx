@@ -5,7 +5,7 @@ import { CheckIcon, ClockIcon, CloseIcon, FireIcon, ProteinIcon } from './icons'
 
 export function TodayCard({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <section className={`flex flex-col rounded-[20px] bg-[var(--today-surface)] p-4 shadow-[inset_0_0_0_1px_var(--today-border)] ${className}`}>
+    <section className={`flex flex-col rounded-[28px] bg-[var(--today-surface)] p-4 shadow-[inset_0_0_0_1px_var(--today-border)] ${className}`}>
       {children}
     </section>
   )

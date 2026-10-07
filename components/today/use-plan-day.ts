@@ -13,12 +13,13 @@ export function usePlanDay(date: string | null) {
   const [status, setStatus] = useState<PlanDayStatus>(date ? 'loading' : 'idle')
   const requestRef = useRef(0)
 
-  const load = useCallback(async () => {
+  /** `silent` refreshes in the background, keeping the current plan on screen. */
+  const load = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!date) return
     const requestId = ++requestRef.current
-    setStatus('loading')
+    if (!silent) setStatus('loading')
     const slowTimer = window.setTimeout(() => {
-      if (requestId === requestRef.current) setStatus('generating')
+      if (!silent && requestId === requestRef.current) setStatus('generating')
     }, GENERATING_AFTER_MS)
 
     try {
@@ -29,7 +30,7 @@ export function usePlanDay(date: string | null) {
       setPlanDay(parsed)
       setStatus('ready')
     } catch {
-      if (requestId === requestRef.current) setStatus('error')
+      if (!silent && requestId === requestRef.current) setStatus('error')
     } finally {
       window.clearTimeout(slowTimer)
     }

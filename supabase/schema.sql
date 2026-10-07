@@ -114,3 +114,8 @@ on public.workout_logs
 for all
 using (auth.role() = 'service_role')
 with check (auth.role() = 'service_role');
+
+-- Photo logging: AI-estimated meals from a food photo (photos themselves aren't stored).
+alter table public.meal_logs drop constraint if exists meal_logs_source_check;
+alter table public.meal_logs
+add constraint meal_logs_source_check check (source in ('planned', 'custom_text', 'custom_photo'));

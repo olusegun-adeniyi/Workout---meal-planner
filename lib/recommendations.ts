@@ -403,3 +403,8 @@ export function getWorkoutForSplit(split: WorkoutSplit, muscleGroups: string, es
   const template = workoutsByDay.find((workout) => workout.splitLabel === splitLabels[split]) ?? workoutsByDay[0]
   return { ...template, muscleGroups, estimatedMinutes }
 }
+
+/** Which slot an illustrated meal is normally planned for — used to rank swap options. */
+export function getUsualSlotForMeal(name: string): MealSlotId | undefined {
+  return (Object.keys(mealTemplates) as MealSlotId[]).find((slot) => mealTemplates[slot].some((meal) => meal.name === name))
+}

@@ -193,9 +193,9 @@ Use this checklist on:
 
 Deliberate, signed-off deviations from the items above. A screen listed here passes that item *for the stated reason only*; anything outside that scope is still judged by the checklist. Commits touching these areas still carry the `[UI-EXCEPTION]` tag.
 
-### Today screen (mobile) — `design_handoff_today_calendar/`
+### Today + Plan app shell (mobile) — `design_handoff_today_calendar/`, `design_handoff_today_plan/`
 
-The handoff is high-fidelity and was explicitly chosen over the base aesthetic. Scope: `app/today/page.tsx` (mobile branch) and `components/today/`.
+The handoffs are high-fidelity and were explicitly chosen over the base aesthetic. Scope: the mobile branch of `components/today/today-app.tsx`, plus `components/today/`, `components/plan/` (except `plan-desktop.tsx`) and `components/shell/`.
 
 | Item | Exception | Reason |
 |---|---|---|
@@ -207,6 +207,10 @@ The handoff is high-fidelity and was explicitly chosen over the base aesthetic. 
 | 4 | Drag handle hit area is 120×28 | Handoff spec. The handle is a convenience: the calendar button and the close X are the primary controls and both meet 44px tap height. |
 | 8 | Inline `style` for calendar geometry (position, width, opacity, scale, `color-mix` colours) | Values are recomputed every animation frame from the sheet progress; they can't be classes. |
 | 6 | No H1 on the mobile Today screen | Handoff has no screen title. The calendar sheet and "Next suggestion" card carry orientation. |
+| 1 | Dark shell behind the tab bar (`#1B1B1B`) with a `#3C3C3C` active pill, as `--today-shell-bg` / `--today-tab-active` | Handoff app frame. |
+| 4 | Inactive tab-bar tabs are 24×32 | Handoff layout: three tabs plus the Log meal button fit in 393pt only at this size. The active tab grows to ~70×32. |
+| 7 | Swap is revealed by a horizontal swipe on Plan meal rows | Handoff gesture. Keyboard users get it by focusing Swap, which opens the row. |
+| 8 | Inline `style` for tab-bar geometry, page transforms and row offsets | Recomputed every animation frame from springs. |
 
 ---
 

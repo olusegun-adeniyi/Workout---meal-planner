@@ -55,7 +55,7 @@ function StatTile({
   loading: boolean
 }) {
   return (
-    <div className="flex h-[166px] min-w-0 flex-1 flex-col items-center gap-2 rounded-[16px] bg-[var(--today-cell)] p-4">
+    <div className="flex h-[166px] min-w-0 flex-1 flex-col items-center gap-2 rounded-[20px] bg-[var(--today-cell)] p-4">
       <span className="text-[14px] font-medium leading-5 text-[var(--today-text-secondary)]">{label}</span>
       {gauge}
       <div className="flex h-10 flex-col items-center justify-center" aria-label={`${value} of ${goal}`}>

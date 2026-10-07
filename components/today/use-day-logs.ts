@@ -102,7 +102,7 @@ export function useDayLogs(date: string | null) {
       name: input.name,
       calories: Math.round(input.calories),
       protein: Math.round(input.protein),
-      notes: input.source === 'custom_text' ? input.notes ?? null : null,
+      notes: input.source === 'planned' ? null : input.notes ?? null,
       loggedAt: getNowTimestamp(),
     }
 

@@ -2,28 +2,13 @@ import Anthropic from '@anthropic-ai/sdk'
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
 // The SDK's output-format helper takes zod v4 schemas; zod 3.25 ships v4 at this path.
 import { z } from 'zod/v4'
-import { AiWeeklyPlanSchema, type AiWeeklyPlan } from './schemas'
+import { AiWeeklyPlanSchema, type AiWeeklyPlan, illustratedMealNames } from './schemas'
 import { buildWeeklyPlanPrompt, buildRetryInstruction } from './prompts'
 import { getTargets, type ProfileInputs } from '@/lib/recommendations'
 import { addDaysToIso } from '@/lib/time/london'
 
 const DEFAULT_MODEL = 'claude-opus-5-5'
 
-// Meals are limited to these so every suggestion has a matching illustration.
-export const illustratedMealNames = [
-  'Whey porridge with banana and peanut butter',
-  'Protein oats with berries and almond butter',
-  'Scrambled eggs, toast and avocado',
-  'Greek yoghurt, granola and cashews',
-  'Cottage cheese, banana and honey',
-  'Tuna melt on sourdough',
-  'Jollof rice, grilled chicken and mixed veg',
-  'Chicken suya wrap and yoghurt',
-  'Turkey chilli with rice',
-  'Beef stew, rice and plantain',
-  'Salmon, potatoes and greens',
-  'Chicken stew, yam and spinach',
-] as const
 
 // What the model is constrained to emit. Range and date checks that JSON-schema
 // constraints can't express are enforced afterwards by AiWeeklyPlanSchema.

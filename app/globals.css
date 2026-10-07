@@ -95,6 +95,9 @@
   --today-food-tile:       #fbefe6;
   --today-button-primary:  #333333;
   --today-button-primary-pressed: #282828;
+  --today-shell-bg:        #1b1b1b;
+  --today-tab-active:      #3c3c3c;
+  --today-chip-neutral:    #f4f4f4;
 }
 
 /* ── Base resets ── */

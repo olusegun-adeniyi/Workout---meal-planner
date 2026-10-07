@@ -117,7 +117,7 @@ export type Database = {
           log_date: string
           slot: 'breakfast' | 'brunch' | 'lunch' | 'dinner' | null
           status: 'eaten' | 'skipped'
-          source: 'planned' | 'custom_text'
+          source: 'planned' | 'custom_text' | 'custom_photo'
           name: string
           calories: number
           protein_g: number
@@ -130,7 +130,7 @@ export type Database = {
           log_date: string
           slot?: 'breakfast' | 'brunch' | 'lunch' | 'dinner' | null
           status: 'eaten' | 'skipped'
-          source: 'planned' | 'custom_text'
+          source: 'planned' | 'custom_text' | 'custom_photo'
           name: string
           calories: number
           protein_g: number
@@ -143,7 +143,7 @@ export type Database = {
           log_date?: string
           slot?: 'breakfast' | 'brunch' | 'lunch' | 'dinner' | null
           status?: 'eaten' | 'skipped'
-          source?: 'planned' | 'custom_text'
+          source?: 'planned' | 'custom_text' | 'custom_photo'
           name?: string
           calories?: number
           protein_g?: number
